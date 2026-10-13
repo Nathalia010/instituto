@@ -1,0 +1,15 @@
+# Demostración local: no habilitar con datos reales ni publicar este perfil.
+server:
+  address: 127.0.0.1
+spring:
+  datasource:
+    url: ${DEMO_DATABASE_URL:jdbc:h2:file:./.data/centrosaber-demo;DATABASE_TO_LOWER=TRUE}
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  flyway:
+    enabled: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:demo-schema.sql
