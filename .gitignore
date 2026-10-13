@@ -1,0 +1,14 @@
+node_modules/
+dist/
+target/
+.env
+.env.*
+!.env.example
+*.log
+.idea/
+.tools/
+.npm-cache/
+*.tsbuildinfo
+.data/
+outputs/
+
