@@ -70,3 +70,96 @@ CREATE TABLE IF NOT EXISTS demo_data_previews (
 );
 CREATE TABLE IF NOT EXISTS demo_data_lock (id INTEGER PRIMARY KEY);
 MERGE INTO demo_data_lock (id) KEY(id) VALUES (1);
+CREATE TABLE IF NOT EXISTS demo_gallery (
+  id VARCHAR(36) PRIMARY KEY,
+  caption VARCHAR(180) NOT NULL,
+  mime VARCHAR(30) NOT NULL,
+  image BLOB,
+  built_in BOOLEAN NOT NULL DEFAULT FALSE,
+  active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+INSERT INTO demo_gallery(id,caption,mime,built_in)
+SELECT 'perro-centro-saber','Estudiar abre nuevos caminos','image/png',TRUE
+WHERE NOT EXISTS (SELECT 1 FROM demo_gallery WHERE id='perro-centro-saber');
+CREATE TABLE IF NOT EXISTS demo_registration_settings (
+ id INTEGER PRIMARY KEY,
+ form1 VARCHAR(500) NOT NULL,
+ form2 VARCHAR(500) NOT NULL,
+ neli_name VARCHAR(80) NOT NULL,
+ neli_phone VARCHAR(10) NOT NULL,
+ estiven_name VARCHAR(80) NOT NULL,
+ estiven_phone VARCHAR(10) NOT NULL
+);
+INSERT INTO demo_registration_settings(id,form1,form2,neli_name,neli_phone,estiven_name,estiven_phone)
+SELECT 1,'https://docs.google.com/forms/d/e/1FAIpQLSe4Eb7DtGo7VTpfMRlwrfEf4GrMhsctWW8uvLjDmWxECUL8yw/viewform','https://docs.google.com/forms/d/e/1FAIpQLSdaVqATplzwGEqTBARjY_bN0LE5zgrFNZ_eOUN2toy9FzRCZA/viewform','Neli','3045822782','Estiven','3143544501'
+WHERE NOT EXISTS (SELECT 1 FROM demo_registration_settings WHERE id=1);
+
+CREATE TABLE IF NOT EXISTS demo_event_images (
+ code VARCHAR(60) PRIMARY KEY,
+ mime VARCHAR(30) NOT NULL,
+ image BLOB NOT NULL,
+ active BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+ALTER TABLE demo_data_records ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE demo_inquiries ADD COLUMN IF NOT EXISTS first_name VARCHAR(80) NOT NULL DEFAULT '';
+ALTER TABLE demo_inquiries ADD COLUMN IF NOT EXISTS last_name VARCHAR(90) NOT NULL DEFAULT '';
+ALTER TABLE demo_inquiries ADD COLUMN IF NOT EXISTS city VARCHAR(120) NOT NULL DEFAULT '';
+ALTER TABLE demo_inquiries ADD COLUMN IF NOT EXISTS neighborhood VARCHAR(120) NOT NULL DEFAULT '';
+CREATE TABLE IF NOT EXISTS demo_sites (
+ id INTEGER PRIMARY KEY,
+ name VARCHAR(120) NOT NULL,
+ address VARCHAR(300) NOT NULL DEFAULT '',
+ phone VARCHAR(10) NOT NULL DEFAULT '',
+ hours VARCHAR(300) NOT NULL DEFAULT '',
+ map_url VARCHAR(500) NOT NULL DEFAULT '',
+ mime VARCHAR(30),
+ image BLOB,
+ image_active BOOLEAN NOT NULL DEFAULT FALSE
+);
+INSERT INTO demo_sites(id,name,address,phone,hours,map_url) SELECT 1,'Sede 1','Calle 26 B # 12i – 22 Sur · Barrio San José','3143544501','Martes a domingo, de 10:00 a. m. a 6:00 p. m.','https://maps.app.goo.gl/4wfy6bWvpJBwGf549' WHERE NOT EXISTS (SELECT 1 FROM demo_sites WHERE id=1);
+INSERT INTO demo_sites(id,name) SELECT 2,'Sede 2' WHERE NOT EXISTS (SELECT 1 FROM demo_sites WHERE id=2);
+INSERT INTO demo_sites(id,name) SELECT 3,'Sede 3' WHERE NOT EXISTS (SELECT 1 FROM demo_sites WHERE id=3);
+ALTER TABLE demo_audit ALTER COLUMN resource_id VARCHAR(200);
+
+CREATE TABLE IF NOT EXISTS demo_levelings (
+ id VARCHAR(36) PRIMARY KEY,
+ student_id VARCHAR(36) NOT NULL REFERENCES demo_students(id),
+ subject VARCHAR(40) NOT NULL,
+ period VARCHAR(80) NOT NULL,
+ academic_year INTEGER NOT NULL,
+ reason VARCHAR(500) NOT NULL,
+ preferred_date VARCHAR(10) NOT NULL,
+ preferred_time VARCHAR(5) NOT NULL,
+ status VARCHAR(20) NOT NULL DEFAULT 'PENDIENTE',
+ teacher VARCHAR(180) NOT NULL DEFAULT '',
+ location VARCHAR(300) NOT NULL DEFAULT '',
+ confirmed_date VARCHAR(10) NOT NULL DEFAULT '',
+ confirmed_time VARCHAR(5) NOT NULL DEFAULT '',
+ result VARCHAR(500) NOT NULL DEFAULT '',
+ response VARCHAR(500) NOT NULL DEFAULT '',
+ created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE demo_gallery ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE demo_levelings ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE demo_levelings ADD COLUMN IF NOT EXISTS slot_id VARCHAR(36);
+CREATE TABLE IF NOT EXISTS demo_leveling_slots (
+ id VARCHAR(36) PRIMARY KEY,
+ slot_date VARCHAR(10) NOT NULL,
+ slot_time VARCHAR(5) NOT NULL,
+ subject VARCHAR(40) NOT NULL,
+ teacher VARCHAR(180) NOT NULL,
+ location VARCHAR(300) NOT NULL,
+ capacity INTEGER NOT NULL,
+ active BOOLEAN NOT NULL DEFAULT TRUE
+);
+CREATE TABLE IF NOT EXISTS demo_publications (
+ kind VARCHAR(20) NOT NULL,
+ id VARCHAR(60) NOT NULL,
+ payload CLOB NOT NULL,
+ deleted BOOLEAN NOT NULL DEFAULT FALSE,
+ PRIMARY KEY(kind,id)
+);
+ALTER TABLE demo_event_images ALTER COLUMN code VARCHAR(160);

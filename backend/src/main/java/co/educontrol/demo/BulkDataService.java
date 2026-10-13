@@ -21,7 +21,7 @@ public class BulkDataService {
  public record PreviewRequest(String module,String filename,List<List<String>> rows,Map<String,Integer> mapping,double minimum,double maximum) {}
  String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException(e);}}
  Map<String,String> decode(String value){try{return json.readValue(value,new TypeReference<LinkedHashMap<String,String>>(){});}catch(Exception e){throw new IllegalStateException(e);}}
- private List<Stored> catalog(String module){return db.query("SELECT record_key,academic_year,payload FROM demo_data_records WHERE module=? ORDER BY created_at DESC",(rs,n)->new Stored(rs.getString(1),(Integer)rs.getObject(2),decode(rs.getString(3))),module);}
+ private List<Stored> catalog(String module){return db.query("SELECT record_key,academic_year,payload FROM demo_data_records WHERE module=? AND deleted=FALSE ORDER BY created_at DESC",(rs,n)->new Stored(rs.getString(1),(Integer)rs.getObject(2),decode(rs.getString(3))),module);}
  private List<Stored> accounts(){
   return db.query("SELECT * FROM demo_students ORDER BY created_at DESC",(rs,n)->{
    Map<String,String> r=new LinkedHashMap<>();for(String f:DataCatalog.get("estudiantes").fields())r.put(f,"");
@@ -45,6 +45,7 @@ public class BulkDataService {
  private Integer referenceYear(String module,String key,List<String> errors){var found=indexed(module).get(key);if(found==null){errors.add("No existe la referencia en "+DataCatalog.get(module).label()+": "+key);return null;}return found.year;}
  List<Checked> check(String module,List<Map<String,String>> input,double minimum,double maximum){
   var definition=DataCatalog.get(module);Set<String> seen=new HashSet<>();Set<String> existing=indexed(module).keySet();List<Checked> result=new ArrayList<>();
+  if(module.equals("agenda")){existing=new HashSet<>(existing);existing.addAll(db.queryForList("SELECT record_key FROM demo_data_records WHERE module='agenda' AND deleted=TRUE",String.class));}
   for(int i=0;i<input.size();i++){
    if(input.get(i).containsKey("__skip"))continue;
    var r=new LinkedHashMap<String,String>();for(var f:definition.fields())r.put(f,input.get(i).getOrDefault(f,"").strip());
@@ -59,7 +60,7 @@ public class BulkDataService {
    if(module.equals("estudiantes")&&r.get("notas_administrativas").length()>500)errors.add("Notas administrativas: máximo 500 caracteres");
    for(String field:List.of("fecha_expedicion","fecha_inicio","fecha_fin","fecha_matricula","fecha_vencimiento","fecha_pago"))if(r.containsKey(field)&&!r.get(field).isBlank())try{LocalDate.parse(r.get(field));}catch(Exception e){errors.add("Fecha inválida (AAAA-MM-DD): "+field);}
    if(r.containsKey("anio")&&!r.get("anio").isBlank())try{year=Integer.parseInt(r.get("anio"));if(year<2000||year>2200)throw new Exception();}catch(Exception e){errors.add("Año inválido");}
-   if(module.equals("cursos")){if(!Set.of("VALIDACION_BACHILLERATO","CURSO","TECNICO").contains(r.get("tipo_programa")))errors.add("Tipo de programa inválido");try{if(Integer.parseInt(r.get("duracion_horas"))<=0)throw new Exception();}catch(Exception e){errors.add("Duración debe ser un entero positivo");}}
+   if(module.equals("cursos")){if(!r.get("codigo_curso").matches("[A-Za-z0-9_-]{1,50}"))errors.add("Código de curso: máximo 50 letras, números, guiones o guion bajo");if(r.get("nombre").length()>180)errors.add("Nombre: máximo 180 caracteres");if(!Set.of("VALIDACION_BACHILLERATO","CURSO","TECNICO").contains(r.get("tipo_programa")))errors.add("Tipo de programa inválido");if(!r.get("duracion_horas").isBlank())try{if(Integer.parseInt(r.get("duracion_horas"))<=0)throw new Exception();}catch(Exception e){errors.add("Duración debe ser un entero positivo");}if(r.get("publicado").isBlank())r.put("publicado","SI");if(!Set.of("SI","NO").contains(r.get("publicado")))errors.add("Publicado debe ser SI o NO");}
    if(module.equals("periodos"))try{var start=LocalDate.parse(r.get("fecha_inicio"));if(LocalDate.parse(r.get("fecha_fin")).isBefore(start))errors.add("La fecha final es anterior al inicio");if(year!=null&&start.getYear()!=year)errors.add("El año no coincide con la fecha inicial");}catch(Exception ignored){}
    if(module.equals("matriculas")){
     if(!indexed("estudiantes").containsKey(r.get("tipo_documento")+":"+r.get("documento")))errors.add("Estudiante no registrado");
@@ -70,11 +71,43 @@ public class BulkDataService {
    if(module.equals("notas")){year=referenceYear("matriculas",r.get("codigo_matricula"),errors);if(!indexed("docentes").containsKey(r.get("tipo_documento_docente")+":"+r.get("documento_docente")))errors.add("Docente no registrado");try{double grade=Double.parseDouble(r.get("nota"));if(!Double.isFinite(grade)||grade<minimum||grade>maximum)throw new Exception();}catch(Exception e){errors.add("Nota fuera de la escala "+minimum+" a "+maximum);}}
    if(module.equals("cobros")){year=referenceYear("matriculas",r.get("codigo_matricula"),errors);}
    if(module.equals("pagos")){year=referenceYear("cobros",r.get("codigo_cobro"),errors);if(!Set.of("EFECTIVO","TRANSFERENCIA","TARJETA","OTRO").contains(r.get("metodo")))errors.add("Método de pago inválido");if(r.get("estado_pago").isBlank())r.put("estado_pago","EN_REVISION");if(!r.get("estado_pago").equals("EN_REVISION"))errors.add("Los pagos importados deben quedar EN_REVISION");}
+   if(module.equals("agenda")){
+    if(!r.get("calendario").isBlank()&&!Set.of("A","B").contains(r.get("calendario")))errors.add("Calendario ICFES inválido: A o B");
+    if(!r.get("etapa").isBlank()&&!Set.of("INSCRIPCION","CITACION","APLICACION","RESULTADOS","PAGO","OTRO").contains(r.get("etapa")))errors.add("Etapa ICFES inválida");
+    if(!r.get("codigo_evento").matches("[A-Za-z0-9_-]{1,60}"))errors.add("Código de evento inválido (letras, números, guion o guion bajo, máximo 60)");
+    if(!Set.of("INGRESO","CLASE","INSCRIPCION","ICFES","NIVELACION","PAGO","OTRO").contains(r.get("tipo_evento")))errors.add("Tipo de evento inválido");
+    if(!Set.of("BORRADOR","PUBLICADO","CANCELADO").contains(r.get("estado")))errors.add("Estado de publicación inválido");
+    if(!r.get("programa").isBlank()&&!Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes","vinculacion","administrativo","infancia","refuerzo","todos").contains(r.get("programa")))errors.add("Programa inválido");
+    if(!r.get("hora").isBlank())try{if(!r.get("hora").matches("[0-9]{2}:[0-9]{2}"))throw new Exception();LocalTime.parse(r.get("hora"));}catch(Exception e){errors.add("Hora inválida (HH:MM)");}
+    try{var start=LocalDate.parse(r.get("fecha_inicio"));if(!r.get("fecha_fin").isBlank()&&LocalDate.parse(r.get("fecha_fin")).isBefore(start))errors.add("La fecha final es anterior al inicio");}catch(Exception ignored){}
+    if(!r.get("enlace").isBlank()&&!https(r.get("enlace")))errors.add("El enlace debe usar HTTPS y tener un dominio válido");
+   }
    if(r.containsKey("valor_cop"))try{var value=new BigDecimal(r.get("valor_cop"));if(value.signum()<=0||value.scale()>2||value.precision()>14)throw new Exception();}catch(Exception e){errors.add("Valor monetario inválido, positivo y máximo dos decimales");}
    String key=DataCatalog.key(module,r);if(existing.contains(key))errors.add("Registro existente: no se sobrescribirá");if(!seen.add(key))errors.add("Registro repetido en el archivo");
    result.add(new Checked(i+2,errors.isEmpty(),errors,r,year));
   }
   return result;
+ }
+ static boolean https(String value){try{var uri=java.net.URI.create(value);return "https".equalsIgnoreCase(uri.getScheme())&&uri.getHost()!=null&&uri.getUserInfo()==null;}catch(Exception e){return false;}}
+ @Transactional public Map<String,String> saveRecord(String module,String originalKey,Map<String,String> input,String actor){
+  DataCatalog.get(module);if(module.equals("agenda"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Usa el editor de eventos.");if(input==null||input.containsKey("__skip")||input.values().stream().anyMatch(Objects::isNull))throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+  db.queryForObject("SELECT id FROM demo_data_lock WHERE id=1 FOR UPDATE",Integer.class);boolean editing=originalKey!=null;
+  if(editing&&(!module.equals("cursos")||db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module=? AND record_key=? AND deleted=FALSE",Integer.class,module,originalKey)==0))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+  var checked=check(module,List.of(input),0,5).getFirst();var errors=new ArrayList<>(checked.errors());if(editing){if(!originalKey.equals(DataCatalog.key(module,checked.data())))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El código no se puede cambiar.");errors.remove("Registro existente: no se sobrescribirá");}if(!errors.isEmpty())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,String.join(" · ",errors));
+  String key=DataCatalog.key(module,checked.data());if(editing)db.update("UPDATE demo_data_records SET academic_year=?,payload=? WHERE module=? AND record_key=?",checked.year(),encode(checked.data()),module,key);else db.update("INSERT INTO demo_data_records(module,record_key,academic_year,payload) VALUES (?,?,?,?)",module,key,checked.year(),encode(checked.data()));
+  db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),actor,editing?"EDITAR_CURSO":"CREAR_"+module.toUpperCase(),key);return checked.data();
+ }
+ @Transactional public Map<String,String> saveEvent(String originalKey,Map<String,String> data,String actor){
+  if(data==null||data.values().stream().anyMatch(Objects::isNull))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Completa los campos del evento.");
+  db.queryForObject("SELECT id FROM demo_data_lock WHERE id=1 FOR UPDATE",Integer.class);
+  boolean edit=originalKey!=null;
+  if(edit&&db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module='agenda' AND deleted=FALSE AND record_key=?",Integer.class,originalKey)==0)throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+  if(edit&&!originalKey.equals(data.get("codigo_evento")))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El código no se puede cambiar.");
+  var checked=check("agenda",List.of(data),0,5).getFirst();var errors=new ArrayList<>(checked.errors());if(edit)errors.remove("Registro existente: no se sobrescribirá");
+  if(!errors.isEmpty())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,String.join(" · ",errors));
+  if(edit)db.update("UPDATE demo_data_records SET academic_year=?,payload=? WHERE module='agenda' AND record_key=?",checked.year(),encode(checked.data()),originalKey);
+  else db.update("INSERT INTO demo_data_records(module,record_key,academic_year,payload) VALUES ('agenda',?,?,?)",checked.data().get("codigo_evento"),checked.year(),encode(checked.data()));
+  db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),actor,edit?"EDITAR_EVENTO":"CREAR_EVENTO",checked.data().get("codigo_evento"));return checked.data();
  }
  public Map<String,Object> preview(PreviewRequest req,String sessionHash){
   var def=DataCatalog.get(req.module());if(req.rows()==null||req.rows().size()>2000||req.mapping()==null||req.filename()==null||req.filename().length()>255||!Double.isFinite(req.minimum())||!Double.isFinite(req.maximum())||req.maximum()<=req.minimum())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Archivo o escala inválidos.");

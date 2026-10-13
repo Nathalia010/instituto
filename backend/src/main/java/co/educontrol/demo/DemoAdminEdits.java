@@ -20,7 +20,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Profile("demo")
 public class DemoAdminEdits {
     private final JdbcTemplate db;
-    private static final Set<String> PROGRAMS=Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes");
+    private static final Set<String> PROGRAMS=Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes","vinculacion","administrativo","infancia","refuerzo");
     private static final Set<String> STATUSES=Set.of("EN_CURSO","FINALIZADO","NO_FINALIZADO","RETIRADO","PENDIENTE_EVALUACION","PENDIENTE_MATRICULA");
     public DemoAdminEdits(JdbcTemplate db) { this.db=db; }
     public record EditInquiry(@NotBlank @Size(max=180) String name, @NotNull @Pattern(regexp="[0-9]{5,30}|") String document,
@@ -31,7 +31,7 @@ public class DemoAdminEdits {
         @NotBlank String program, @NotBlank String issued, @NotBlank String status, @NotNull @Size(max=500) String notes) {}
     public record InquiryNotes(@NotNull @Size(max=2000) String notes) {}
     private void validateProgram(String program) {
-        if(!PROGRAMS.contains(program))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
+        if(!PROGRAMS.contains(program)&&db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module='cursos' AND record_key=? AND deleted=FALSE",Integer.class,program)==0)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
     }
     private void audit(String action,String id) {
         db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),SecurityContextHolder.getContext().getAuthentication().getName(),action,id);

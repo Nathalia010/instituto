@@ -29,7 +29,7 @@ public class DemoController {
     private final BCryptPasswordEncoder encoder;
     private final String adminHash;
     private final Map<String, Deque<Long>> attempts = new ConcurrentHashMap<>();
-    private static final Set<String> PROGRAMS = Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes");
+    private static final Set<String> PROGRAMS = Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes","vinculacion","administrativo","infancia","refuerzo");
     public DemoController(JdbcTemplate db, BCryptPasswordEncoder encoder) {
         this.db=db; this.encoder=encoder;
         this.adminHash=encoder.encode("1234987A");
@@ -50,7 +50,7 @@ public class DemoController {
     public record StudentLogin(@Pattern(regexp="[0-9]{5,30}") String document, @NotBlank String issued, @NotBlank @Size(max=4) String year) {}
     public record Inquiry(@NotBlank @Size(max=180) String name, @NotBlank @Email @Size(max=254) String email,
         @NotBlank @Pattern(regexp="[0-9]{10}") String phone, @NotBlank String program,
-        @NotBlank @Size(max=2000) String message, @AssertTrue boolean consent) {}
+        @NotBlank @Size(max=2000) String message, @AssertTrue boolean consent, @Size(max=80) String firstName, @Size(max=90) String lastName, @Size(max=120) String city, @Size(max=120) String neighborhood) {}
     public record CreateStudent(@NotBlank @Pattern(regexp="[0-9]{5,30}") String document, @NotBlank String issued, @Min(2000) @Max(2200) int year) {}
 
     @GetMapping("/csrf") public Map<String,String> csrf(CsrfToken token) {
@@ -99,9 +99,12 @@ public class DemoController {
     @PostMapping("/inquiries") @ResponseStatus(HttpStatus.CREATED)
     public Map<String,String> inquiry(@Valid @RequestBody Inquiry input,HttpServletRequest req) {
         rateLimit(req,"inquiry");
-        if(!PROGRAMS.contains(input.program())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
+        if(!PROGRAMS.contains(input.program())&&db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module='cursos' AND record_key=? AND deleted=FALSE",Integer.class,input.program())==0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
         String id=UUID.randomUUID().toString();
-        db.update("INSERT INTO demo_inquiries(id,name,email,phone,program,message,consent) VALUES (?,?,?,?,?,?,?)",id,input.name().trim(),input.email().trim(),input.phone(),input.program(),input.message().trim(),input.consent());
+        String first=input.firstName()==null?"":input.firstName().strip(),last=input.lastName()==null?"":input.lastName().strip(),city=input.city()==null?"":input.city().strip(),neighborhood=input.neighborhood()==null?"":input.neighborhood().strip();
+        if((!first.isBlank()||!last.isBlank())&&(first.isBlank()||last.isBlank()||city.isBlank()||neighborhood.isBlank()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Completa nombres, apellidos, ciudad y barrio.");
+        String full=first.isBlank()?input.name().strip():first+" "+last;
+        db.update("INSERT INTO demo_inquiries(id,name,email,phone,program,message,consent,first_name,last_name,city,neighborhood) VALUES (?,?,?,?,?,?,?,?,?,?,?)",id,full,input.email().trim(),input.phone(),input.program(),input.message().trim(),input.consent(),first,last,city,neighborhood);
         return Map.of("id",id,"message","Solicitud registrada. La institución podrá contactarte.");
     }
     @GetMapping("/admin/inquiries") public List<Map<String,Object>> inquiries() {

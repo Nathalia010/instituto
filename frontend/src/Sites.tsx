@@ -1,0 +1,23 @@
+import { useEffect, useState, type FormEvent } from 'react';
+import { api } from './api';
+import { RegistrationContacts, type RegistrationSettings } from './RegistrationPages';
+import EventImageEditor from './EventImageEditor';
+import './page-content.css';
+type Site={id:number;name:string;address:string;phone:string;hours:string;mapUrl:string;imageUrl:string};
+export function SitesContact(){
+ const [sites,setSites]=useState<Site[]>([]),[error,setError]=useState('');
+ const [contacts,setContacts]=useState<RegistrationSettings|null>(null),[contactError,setContactError]=useState('');
+ useEffect(()=>{api<Site[]>('/sites').then(setSites).catch(()=>setError('No fue posible cargar las sedes. Intenta nuevamente.'));},[]);
+ useEffect(()=>{api<RegistrationSettings>('/registration/settings').then(setContacts).catch(()=>setContactError('No fue posible cargar los contactos. Intenta nuevamente.'));},[]);
+ return <section className="institution-page"><p className="cs-eyebrow">CONTÁCTANOS Y VISÍTANOS</p><h1>Hablemos de tu<br/><em>próximo paso.</em></h1><p>Comunícate con nuestro equipo para recibir orientación.</p>{contactError&&<p role="alert" className="alert alert-warning">{contactError}</p>}{contacts&&<section className="registration-help mb-5" aria-label="Contactos de orientación"><RegistrationContacts settings={contacts}/></section>}<section aria-label="Sedes y ubicación"><h2>Visítanos en nuestras sedes</h2><p>Consulta la dirección, la ubicación y el horario de atención de cada lugar.</p>{error&&<p className="alert alert-danger">{error}</p>}<div className="row g-4">{sites.map(site=><div key={site.id} className="col-lg-4"><article className="card site-card h-100">{site.imageUrl?<img className="site-photo" src={site.imageUrl} alt={`Instalaciones de ${site.name}`}/>:<div className="site-photo-placeholder">Imagen de {site.name}<small>Por agregar</small></div>}<div className="p-4"><h2>{site.name}</h2><dl><dt>Dirección</dt><dd>{site.address||'Por confirmar'}</dd><dt>Horario de atención</dt><dd>{site.hours||'Por confirmar'}</dd><dt>Teléfono</dt><dd>{site.phone?<a href={`tel:+57${site.phone}`}>+57 {site.phone}</a>:'Por confirmar'}</dd></dl>{site.mapUrl&&<a className="cs-button btn btn-primary" href={site.mapUrl} target="_blank" rel="noreferrer">Ver ubicación ↗</a>}</div></article></div>)}</div></section></section>;
+}
+export default function SitesAdmin({revision}:{revision:number}){
+ const [sites,setSites]=useState<Site[]>([]),[error,setError]=useState('');
+ useEffect(()=>{api<Site[]>('/sites').then(setSites).catch(e=>setError(e.message));},[revision]);
+ return <section><h2>Datos de las tres sedes</h2><p>Completa la dirección, el teléfono, el horario, la ubicación y una foto de cada lugar. Los campos pendientes se muestran como “Por confirmar”.</p>{error&&<p role="alert" className="alert alert-danger">{error}</p>}{sites.map(site=><SiteEditor key={site.id} initial={site}/>)}</section>;
+}
+function SiteEditor({initial}:{initial:Site}){
+ const [site,setSite]=useState(initial),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState('');
+ async function save(e:FormEvent<HTMLFormElement>){e.preventDefault();setBusy(true);setError('');setNotice('');try{await api(`/admin/registration/sites/${site.id}`,site);setNotice('Datos de la sede guardados.');}catch(e){setError((e as Error).message);}finally{setBusy(false);}}
+ return <details className="site-admin card p-4 mb-3"><summary>{site.name} · Editar datos e imagen</summary><form className="mt-4" onSubmit={save}><div className="row g-3">{[{key:'name',label:'Nombre de sede',max:120},{key:'address',label:'Dirección',max:300},{key:'phone',label:'Teléfono (10 dígitos)',max:10},{key:'hours',label:'Horario de atención',max:300},{key:'mapUrl',label:'Enlace de ubicación HTTPS',max:500}].map(f=><label className="form-label col-md-6" key={f.key}>{f.label}<input className="form-control mt-2" required={f.key==='name'} type={f.key==='mapUrl'?'url':f.key==='phone'?'tel':'text'} pattern={f.key==='phone'?'[0-9]{10}':undefined} maxLength={f.max} value={site[f.key as keyof Site]} onChange={e=>setSite({...site,[f.key]:e.target.value})}/></label>)}</div><button className="btn btn-primary mt-3" disabled={busy}>Guardar datos de sede</button>{error&&<p role="alert" className="alert alert-danger mt-3">{error}</p>}{notice&&<p role="status" className="alert alert-success mt-3">{notice}</p>}</form><EventImageEditor code={String(site.id)} endpointOverride={`/admin/registration/sites/${site.id}/image`} title="Imagen de la sede" description="Selecciona una foto del lugar, revisa la vista previa y guárdala para mostrarla en Contacto."/></details>;
+}

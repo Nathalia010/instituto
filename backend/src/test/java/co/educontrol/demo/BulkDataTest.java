@@ -28,7 +28,7 @@ class BulkDataTest {
   return (MockHttpSession)mvc.perform(post("/api/demo/login/admin").with(csrf()).contentType("application/json").content("{\"username\":\"adminN\",\"password\":\"1234987A\"}")).andExpect(status().isOk()).andReturn().getRequest().getSession(false);
  }
  BulkDataService.PreviewRequest request(String module,List<List<String>> rows) {
-  var mapping=new LinkedHashMap<String,Integer>();var fields=DataCatalog.get(module).fields();for(int i=0;i<fields.size();i++)mapping.put(fields.get(i),i);
+  var mapping=new LinkedHashMap<String,Integer>();var fields=DataCatalog.get(module).fields();for(int i=0;i<Math.min(fields.size(),rows.stream().mapToInt(List::size).max().orElse(0));i++)mapping.put(fields.get(i),i);
   return new BulkDataService.PreviewRequest(module,"prueba.csv",rows,mapping,0,5);
  }
  String preview(MockHttpSession session,String module,List<List<String>> rows,int valid,int invalid) throws Exception {
@@ -68,7 +68,7 @@ class BulkDataTest {
   assertEquals(2,service.list("matriculas",null).size());
   var bytes=mvc.perform(get("/api/demo/admin/data/export/all").param("year","2025").session(session)).andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
   try(var book=new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
-   assertEquals(10,book.getNumberOfSheets());
+   assertEquals(11,book.getNumberOfSheets());
    assertEquals(0,book.getSheet("Notas del portal").getLastRowNum());
    assertEquals(1,book.getSheet("Matrículas").getLastRowNum());
    assertEquals("M2025",book.getSheet("Matrículas").getRow(1).getCell(0).getStringCellValue());
@@ -108,4 +108,5 @@ class BulkDataTest {
   assertEquals(3,checked.getFirst().row());
  }
 }
+
 

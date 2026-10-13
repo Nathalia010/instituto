@@ -13,8 +13,10 @@ export const centroSaber = {
   hours: 'Martes a domingo, de 10:00 a. m. a 6:00 p. m.',
   map: 'https://maps.app.goo.gl/4wfy6bWvpJBwGf549',
   programs: [
-    { id: 'validacion', number: '01', title: 'Validación para adultos', label: 'RETOMA TUS ESTUDIOS', description: 'Conoce la opción de validación para adultos anunciada por Centro Saber.', details: 'La página institucional presenta esta opción bajo la referencia D299 de 2007. Consulta directamente con la institución los requisitos, el proceso y las condiciones aplicables.', icon: 'book' },
+    { id: 'validacion', number: '01', title: 'Validar bachiller', label: 'RETOMA TUS ESTUDIOS', description: 'Conoce el programa Validar bachiller anunciado por Centro Saber.', details: 'La página institucional presenta esta opción bajo la referencia D299 de 2007. Consulta directamente con la institución los requisitos, el proceso y las condiciones aplicables.', icon: 'book' },
     { id: 'preparacion', number: '02', title: 'Preparación en educación informal', label: 'FORTALECE TU FORMACIÓN', description: 'Explora la oferta de preparación de educación informal de la institución.', details: 'Solicita información sobre contenidos, modalidad, duración y disponibilidad. Estos detalles no están especificados en la página pública consultada.', icon: 'spark' },
     { id: 'preuniversitario', number: '03', title: 'Preparación preuniversitaria', label: 'PREPARA TU SIGUIENTE PASO', description: 'Consulta la alternativa de preparación preuniversitaria que anuncia Centro Saber.', details: 'Confirma con la institución las fechas, los contenidos y el proceso de inscripción. La página consultada no publica tarifas ni horarios específicos de este programa.', icon: 'cap' },
   ],
 } as const;
+
+
