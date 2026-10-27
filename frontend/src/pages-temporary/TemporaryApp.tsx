@@ -1,7 +1,3 @@
-import StudentPortal from '../StudentPortal';
-import { LevelingGuides } from '../Levelings';
-export default function TemporaryApp(){
- const route=new URLSearchParams(location.search).get('route')||'/';
- if(['/administracion','/estudiantes','/informacion'].includes(route))return <div className="cs-site student-site"><main className="cs-main py-5"><a href="/" className="cs-outline">← Volver a Centro Saber</a><h1 className="mt-4">{route==='/informacion'?'¿Quieres estudiar con nosotros?':route==='/estudiantes'?'Mi espacio estudiantil':'Acceso administrativo'}</h1><p>Estás en una vista pública temporal. El ingreso a cuentas, las solicitudes y los registros estarán disponibles cuando se conecte el servidor de la institución.</p><a className="cs-button" href="/contacto">Comunicarme con Centro Saber</a>{route==='/estudiantes'&&<LevelingGuides/>}</main></div>;
- return <><div className="alert alert-info mb-0 rounded-0 text-center py-2 small" role="note">Vista pública temporal · Información de referencia. Confirma fechas y disponibilidad con la institución.</div><StudentPortal/></>;
-}
+import App from '../App';
+import {resetDemo} from './demo';
+export default function TemporaryApp(){return <><aside className="alert alert-warning mb-0 rounded-0 py-2 text-center small" style={{position:'relative',zIndex:2}} aria-label="Demostración temporal"><strong>Demostración temporal · Solo datos ficticios.</strong> Los cambios se guardan en este navegador; no ingreses datos reales. <details><summary>Accesos de prueba y funciones disponibles</summary><p className="mb-1">Administrador: <b>adminN</b> · Clave: <b>1234987A</b><br/>Estudiante: <b>1000000001</b> · Expedición: <b>2020-01-15</b> · Año: <b>2026</b></p><p className="mb-1">Puedes consultar las pantallas, editar estudiantes y notas, crear registros y probar solicitudes de nivelación. La carga de archivos, las exportaciones y algunas opciones de publicación no están habilitadas.</p><button className="btn btn-sm btn-outline-dark" onClick={()=>{if(window.confirm('¿Restablecer los datos ficticios de este navegador?'))resetDemo();}}>Restablecer demostración</button></details></aside><App/></>;}

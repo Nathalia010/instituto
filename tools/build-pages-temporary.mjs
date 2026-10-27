@@ -32,6 +32,9 @@ async function convert(value){
  return value;
 }
 const content=await convert(snapshot);
+// Field definitions from source code only; no authenticated database export.
+const catalogSource=await fs.readFile(path.join(root,'backend/src/main/java/co/educontrol/demo/DataCatalog.java'),'utf8');
+content['/demo/catalog']=[...catalogSource.matchAll(/def\("([^"]+)","([^"]+)",(true|false),"([^"]*)","([^"]*)"\)/g)].map(([,id,label,annual,fields,required])=>({id,label,annual:annual==='true',fields:fields.split(','),required:required.split(',')}));
 execFileSync(process.execPath,[path.join(root,'frontend/node_modules/vite/bin/vite.js'),'build','--config',path.join(root,'frontend/pages-temporary/vite.config.ts')],{cwd:path.join(root,'frontend'),stdio:'inherit',env:{...process.env,PAGES_TEMPORARY_BASE:base}});
 await fs.writeFile(path.join(output,'contenido-publico.json'),JSON.stringify(content,null,2));
 await fs.mkdir(path.join(output,'preview-media'),{recursive:true});

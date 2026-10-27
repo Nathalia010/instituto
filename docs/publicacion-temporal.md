@@ -10,7 +10,7 @@ Con el servidor local activo, ejecuta desde la raíz:
 node tools/build-pages-temporary.mjs
 ```
 
-El comando consulta exclusivamente los endpoints públicos, copia las imágenes publicadas y genera `publicacion-temporal/`. No exporta estudiantes, usuarios, credenciales, notas, pagos, solicitudes ni auditorías. Los contactos institucionales y las fechas publicadas sí se incluyen. Revisa la copia antes de subirla.
+El comando consulta exclusivamente los endpoints públicos, copia las imágenes publicadas y genera `publicacion-temporal/`. No exporta estudiantes, usuarios, credenciales reales, notas, pagos, solicitudes ni auditorías de la base de datos. Los contactos institucionales y las fechas publicadas sí se incluyen. Revisa la copia antes de subirla.
 
 La dirección predeterminada es `https://nathalia010.github.io/instituto/`. Para otro repositorio, cambia `PAGES_TEMPORARY_BASE` antes de generar la copia.
 
@@ -26,7 +26,20 @@ La portada raíz (`index.html`) es la puerta temporal: conduce a la copia estát
 
 Programas, comunicados, imágenes, sedes, contactos, calendario publicado, ICFES, videos, guías, enlaces de formularios externos, manual de convivencia y programación publicada de eventos. El contenido corresponde al momento de ejecutar el comando; los cambios posteriores en administración requieren volver a generar y subir la copia.
 
-Las cuentas, el panel administrativo, las solicitudes internas y el agendamiento no se conectan a Java en GitHub Pages. Esos accesos muestran un aviso y contacto con la institución; no simulan guardados ni solicitan credenciales.
+La demo ahora permite entrar al panel administrativo y al espacio estudiantil con cuentas ficticias. Los datos y cambios de prueba se guardan en localStorage de ese navegador; la sesión simulada se mantiene en sessionStorage. No existe autenticación real ni conexión con Java en esta copia. No ingreses información personal real.
+
+- Administrador: **adminN**, clave **1234987A**.
+- Estudiante: documento **1000000001**, expedición **2020-01-15**, año/clave **2026**.
+
+Puedes explorar los módulos, crear registros individuales, editar estudiantes y notas, activar o desactivar cuentas ficticias y probar solicitudes de nivelación. Algunas opciones de edición de la página no están implementadas y muestran un aviso. La carga de archivos y las exportaciones administrativas están deshabilitadas. Las plantillas estáticas siguen disponibles.
+
+Usa **Accesos de prueba y funciones disponibles → Restablecer demostración** para volver a los ejemplos iniciales. Los cambios no se comparten entre personas ni computadores. Para actualizar GitHub Pages, vuelve a subir la carpeta generada completa, incluido su index.html y los nuevos assets.
+
+Verificación de la lógica de demostración:
+
+```powershell
+node tools/test-pages-demo.mjs
+```
 
 ## Retirar la puerta y volver al proyecto habitual
 

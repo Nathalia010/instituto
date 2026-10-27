@@ -324,5 +324,201 @@
     "id": "SALIDA-REFERENCIA-2026",
     "deleted": "false",
     "photos": "[]"
-  }
+  },
+  "/demo/catalog": [
+    {
+      "id": "estudiantes",
+      "label": "Estudiantes",
+      "annual": true,
+      "fields": [
+        "tipo_documento",
+        "documento",
+        "nombres",
+        "apellidos",
+        "nombre_completo",
+        "correo",
+        "telefono",
+        "fecha_expedicion",
+        "programa",
+        "anio",
+        "estado_academico",
+        "notas_administrativas"
+      ],
+      "required": [
+        "tipo_documento",
+        "documento"
+      ]
+    },
+    {
+      "id": "docentes",
+      "label": "Docentes",
+      "annual": false,
+      "fields": [
+        "tipo_documento",
+        "documento",
+        "nombre_completo",
+        "correo",
+        "telefono"
+      ],
+      "required": [
+        "tipo_documento",
+        "documento",
+        "nombre_completo",
+        "correo"
+      ]
+    },
+    {
+      "id": "cursos",
+      "label": "Cursos",
+      "annual": false,
+      "fields": [
+        "codigo_curso",
+        "nombre",
+        "tipo_programa",
+        "duracion_horas",
+        "descripcion",
+        "publicado",
+        "materias",
+        "fecha_inicio",
+        "fecha_fin",
+        "nota_aprobacion"
+      ],
+      "required": [
+        "codigo_curso",
+        "nombre",
+        "tipo_programa"
+      ]
+    },
+    {
+      "id": "periodos",
+      "label": "Periodos",
+      "annual": true,
+      "fields": [
+        "codigo_periodo",
+        "anio",
+        "nombre",
+        "fecha_inicio",
+        "fecha_fin"
+      ],
+      "required": [
+        "codigo_periodo",
+        "anio",
+        "nombre",
+        "fecha_inicio",
+        "fecha_fin"
+      ]
+    },
+    {
+      "id": "matriculas",
+      "label": "Matrículas",
+      "annual": true,
+      "fields": [
+        "codigo_matricula",
+        "tipo_documento",
+        "documento",
+        "codigo_curso",
+        "codigo_periodo",
+        "grupo",
+        "fecha_matricula",
+        "estado_academico"
+      ],
+      "required": [
+        "codigo_matricula",
+        "tipo_documento",
+        "documento",
+        "codigo_curso",
+        "codigo_periodo",
+        "grupo",
+        "fecha_matricula",
+        "estado_academico"
+      ]
+    },
+    {
+      "id": "notas",
+      "label": "Notas",
+      "annual": true,
+      "fields": [
+        "codigo_matricula",
+        "codigo_evaluacion",
+        "nota",
+        "tipo_documento_docente",
+        "documento_docente"
+      ],
+      "required": [
+        "codigo_matricula",
+        "codigo_evaluacion",
+        "nota",
+        "tipo_documento_docente",
+        "documento_docente"
+      ]
+    },
+    {
+      "id": "cobros",
+      "label": "Cobros",
+      "annual": true,
+      "fields": [
+        "codigo_cobro",
+        "codigo_matricula",
+        "codigo_concepto",
+        "valor_cop",
+        "fecha_vencimiento"
+      ],
+      "required": [
+        "codigo_cobro",
+        "codigo_matricula",
+        "codigo_concepto",
+        "valor_cop",
+        "fecha_vencimiento"
+      ]
+    },
+    {
+      "id": "pagos",
+      "label": "Pagos",
+      "annual": true,
+      "fields": [
+        "referencia",
+        "codigo_cobro",
+        "fecha_pago",
+        "valor_cop",
+        "metodo",
+        "estado_pago"
+      ],
+      "required": [
+        "referencia",
+        "codigo_cobro",
+        "fecha_pago",
+        "valor_cop",
+        "metodo"
+      ]
+    },
+    {
+      "id": "agenda",
+      "label": "Fechas y eventos",
+      "annual": true,
+      "fields": [
+        "codigo_evento",
+        "anio",
+        "tipo_evento",
+        "titulo",
+        "programa",
+        "calendario",
+        "etapa",
+        "fecha_inicio",
+        "fecha_fin",
+        "hora",
+        "lugar",
+        "enlace",
+        "detalle",
+        "estado"
+      ],
+      "required": [
+        "codigo_evento",
+        "anio",
+        "tipo_evento",
+        "titulo",
+        "fecha_inicio",
+        "estado"
+      ]
+    }
+  ]
 }

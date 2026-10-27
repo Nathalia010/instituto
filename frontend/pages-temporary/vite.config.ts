@@ -9,9 +9,7 @@ export default defineConfig({
    if(!id.includes('/src/')&&!id.includes('\\src\\'))return;
    const name=id.replaceAll('\\','/');
    if(name.endsWith('/api.ts'))source=source.replace(/export async function api<T>[\s\S]*?\r?\n}\r?\n/,"export {pagesApi as api} from './pages-temporary/runtime';\n");
-   if(name.endsWith('/App.tsx'))return "export {default} from './pages-temporary/TemporaryApp';";
-   if(name.endsWith('/main.tsx'))source="import {setupTemporaryPages} from './pages-temporary/runtime';\nsetupTemporaryPages("+JSON.stringify(base)+");\n"+source;
-   if(name.endsWith('/Levelings.tsx'))source=source.replaceAll('/estudiantes#student-login','/contacto').replaceAll('Agendar en el portal','Consultar agendamiento').replaceAll('Entrar para consultar mis solicitudes ↑','Consultar solicitudes con la institución').replaceAll('Puedes agendar en el portal con las fechas disponibles.','Consulta las fechas disponibles y confirma tu cita con la institución.');
+   if(name.endsWith('/main.tsx'))source="import TemporaryDemo from './pages-temporary/TemporaryApp';\nimport {setupTemporaryPages} from './pages-temporary/runtime';\nsetupTemporaryPages("+JSON.stringify(base)+");\n"+source.replace('<App />','<TemporaryDemo/>');
    source=source.replaceAll('window.location.pathname',"(new URLSearchParams(window.location.search).get('route')||'/')");
    // Root image/file references must resolve under the repository subdirectory.
    source=source.replace(/(["'`])\/(marca|comunicados|manuales|plantillas|vendor)\//g,(_,quote,folder)=>quote+base+folder+'/');
