@@ -1,0 +1,9 @@
+.manual-record-modal{width:min(820px,calc(100vw - 32px));max-height:calc(100dvh - 48px);padding:0;border:1px solid #cddfe5;border-radius:18px;color:#234e65;background:#fff;box-shadow:0 24px 80px #123e5a40;overflow:auto}
+.manual-record-modal::backdrop{background:#123e5a80;backdrop-filter:blur(3px)}
+.manual-record-modal .modal-header{padding:20px 24px;background:#eef7fa;gap:20px;border-bottom:1px solid #dce9ec;position:sticky;top:0;z-index:1}
+.manual-record-modal .modal-body{padding:24px}
+.manual-record-modal .modal-footer{padding:16px 24px;border-top:1px solid #dce9ec;background:#f8fbfc;gap:12px}
+.manual-record-modal .form-label{font-size:14px}
+.manual-record-modal .btn-primary{background:#167b88;border-color:#167b88}
+.manual-record-modal :focus-visible{outline:3px solid #d5a700;outline-offset:2px}
+@media(max-width:600px){.manual-record-modal{max-height:calc(100dvh - 24px)}.manual-record-modal .modal-body,.manual-record-modal .modal-header{padding:18px}.manual-record-modal .modal-footer{padding:14px 18px}}

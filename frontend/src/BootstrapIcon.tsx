@@ -1,0 +1,2 @@
+// Bootstrap Icons: person-workspace (MIT).
+export default function BootstrapIcon(){return <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 1a1 1 0 0 0-1 1v4H4V2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2v-1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/><path d="M8 13a3 3 0 0 0-3-3H3a3 3 0 0 0-3 3v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1zM4 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/></svg>;}

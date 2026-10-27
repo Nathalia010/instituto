@@ -79,9 +79,11 @@ CREATE TABLE IF NOT EXISTS demo_gallery (
   active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS demo_content_seeds (id VARCHAR(80) PRIMARY KEY);
 INSERT INTO demo_gallery(id,caption,mime,built_in)
 SELECT 'perro-centro-saber','Estudiar abre nuevos caminos','image/png',TRUE
-WHERE NOT EXISTS (SELECT 1 FROM demo_gallery WHERE id='perro-centro-saber');
+WHERE NOT EXISTS (SELECT 1 FROM demo_gallery WHERE id='perro-centro-saber') AND NOT EXISTS (SELECT 1 FROM demo_content_seeds WHERE id='gallery-initialized');
+MERGE INTO demo_content_seeds(id) KEY(id) VALUES ('gallery-initialized');
 CREATE TABLE IF NOT EXISTS demo_registration_settings (
  id INTEGER PRIMARY KEY,
  form1 VARCHAR(500) NOT NULL,
@@ -163,3 +165,34 @@ CREATE TABLE IF NOT EXISTS demo_publications (
  PRIMARY KEY(kind,id)
 );
 ALTER TABLE demo_event_images ALTER COLUMN code VARCHAR(160);
+
+ALTER TABLE demo_students ADD COLUMN IF NOT EXISTS account_active BOOLEAN NOT NULL DEFAULT TRUE;
+ALTER TABLE demo_students ADD COLUMN IF NOT EXISTS account_version INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE demo_students ADD COLUMN IF NOT EXISTS document_type VARCHAR(6) NOT NULL DEFAULT 'CC';
+
+ALTER TABLE demo_students ALTER COLUMN account_active SET DEFAULT FALSE;
+
+ALTER TABLE demo_students ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE demo_data_records ADD COLUMN IF NOT EXISTS active BOOLEAN NOT NULL DEFAULT TRUE;
+
+CREATE TABLE IF NOT EXISTS demo_course_grades (
+ course_code VARCHAR(50) NOT NULL,
+ student_id VARCHAR(36) NOT NULL REFERENCES demo_students(id),
+ academic_year INTEGER NOT NULL,
+ subject_key VARCHAR(180) NOT NULL,
+ subject_name VARCHAR(180) NOT NULL,
+ grade NUMERIC(3,2),
+ PRIMARY KEY(course_code,student_id,academic_year,subject_key),
+ CHECK(grade IS NULL OR (grade >= 0 AND grade <= 5))
+);
+
+ALTER TABLE demo_levelings ADD COLUMN IF NOT EXISTS course_code VARCHAR(50) NOT NULL DEFAULT '';
+ALTER TABLE demo_levelings ADD COLUMN IF NOT EXISTS course_name VARCHAR(180) NOT NULL DEFAULT '';
+ALTER TABLE demo_levelings ADD COLUMN IF NOT EXISTS subject_name VARCHAR(180) NOT NULL DEFAULT '';
+ALTER TABLE demo_levelings ALTER COLUMN subject VARCHAR(180);
+ALTER TABLE demo_leveling_slots ALTER COLUMN subject VARCHAR(180);
+
+ALTER TABLE demo_sites ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE demo_leveling_slots ADD COLUMN IF NOT EXISTS deleted BOOLEAN NOT NULL DEFAULT FALSE;
+DELETE FROM demo_gallery WHERE deleted=TRUE;

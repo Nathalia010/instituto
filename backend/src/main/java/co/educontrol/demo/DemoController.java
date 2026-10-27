@@ -28,16 +28,17 @@ public class DemoController {
     private final JdbcTemplate db;
     private final BCryptPasswordEncoder encoder;
     private final String adminHash;
+    private final CourseGradeController courseGrades;
     private final Map<String, Deque<Long>> attempts = new ConcurrentHashMap<>();
     private static final Set<String> PROGRAMS = Set.of("validacion","preparacion","preuniversitario","enfermeria","icfes","vinculacion","administrativo","infancia","refuerzo");
-    public DemoController(JdbcTemplate db, BCryptPasswordEncoder encoder) {
-        this.db=db; this.encoder=encoder;
+    public DemoController(JdbcTemplate db, BCryptPasswordEncoder encoder,CourseGradeController courseGrades) {
+        this.db=db; this.encoder=encoder;this.courseGrades=courseGrades;
         this.adminHash=encoder.encode("1234987A");
     }
     @Bean ApplicationRunner seedDemo() {
         return args -> {
             if (db.queryForObject("SELECT count(*) FROM demo_students WHERE id='prueba-estudiante'", Integer.class)==0) {
-                db.update("INSERT INTO demo_students(id,name,email,phone,program,document,issued,academic_year,key_hash,academic_status) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                db.update("INSERT INTO demo_students(id,name,email,phone,program,document,issued,academic_year,key_hash,academic_status,account_active) VALUES (?,?,?,?,?,?,?,?,?,?,TRUE)",
                     "prueba-estudiante","Estudiante de prueba","estudiante@example.invalid","3000000000","validacion","1000000001","2020-01-15",2026,encoder.encode("2026"),"EN_CURSO");
                 db.update("INSERT INTO demo_notes VALUES (?,?,?,?,?)","nota-prueba-1","prueba-estudiante","Matemáticas",4.2,2026);
                 db.update("INSERT INTO demo_notes VALUES (?,?,?,?,?)","nota-prueba-2","prueba-estudiante","Lenguaje",4.5,2026);
@@ -47,7 +48,7 @@ public class DemoController {
         };
     }
     public record AdminLogin(@NotBlank @Size(max=80) String username, @NotBlank @Size(max=100) String password) {}
-    public record StudentLogin(@Pattern(regexp="[0-9]{5,30}") String document, @NotBlank String issued, @NotBlank @Size(max=4) String year) {}
+    public record StudentLogin(@NotBlank @Pattern(regexp="[A-Za-z0-9]{1,30}") String document, @NotBlank String issued, @NotBlank @Size(max=4) String year) {}
     public record Inquiry(@NotBlank @Size(max=180) String name, @NotBlank @Email @Size(max=254) String email,
         @NotBlank @Pattern(regexp="[0-9]{10}") String phone, @NotBlank String program,
         @NotBlank @Size(max=2000) String message, @AssertTrue boolean consent, @Size(max=80) String firstName, @Size(max=90) String lastName, @Size(max=120) String city, @Size(max=120) String neighborhood) {}
@@ -74,7 +75,9 @@ public class DemoController {
     private Map<String,String> signIn(String id,String role,HttpServletRequest req,HttpServletResponse res) {
         if(req.getSession(false)!=null) req.changeSessionId();
         var context=SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(new UsernamePasswordAuthenticationToken(id,null,List.of(new SimpleGrantedAuthority("ROLE_"+role))));
+        var token=new UsernamePasswordAuthenticationToken(id,null,List.of(new SimpleGrantedAuthority("ROLE_"+role)));
+        if("ESTUDIANTE".equals(role))token.setDetails(db.queryForObject("SELECT account_version FROM demo_students WHERE id=?",Integer.class,id));
+        context.setAuthentication(token);
         SecurityContextHolder.setContext(context);
         new HttpSessionSecurityContextRepository().saveContext(context,req,res);
         return Map.of("role",role);
@@ -87,8 +90,8 @@ public class DemoController {
     }
     @PostMapping("/login/student") public Map<String,String> studentLogin(@Valid @RequestBody StudentLogin login,HttpServletRequest req,HttpServletResponse res) {
         rateLimit(req,"login");
-        var rows=db.queryForList("SELECT id,issued,key_hash FROM demo_students WHERE document=?",login.document());
-        boolean valid=!rows.isEmpty() && encoder.matches(login.year(),rows.getFirst().get("key_hash").toString()) && login.issued().equals(rows.getFirst().get("issued"));
+        var rows=db.queryForList("SELECT id,issued,key_hash,account_active FROM demo_students WHERE document=? AND deleted=FALSE",login.document().strip().toUpperCase(Locale.ROOT));
+        boolean valid=!rows.isEmpty() && Boolean.TRUE.equals(rows.getFirst().get("account_active")) && encoder.matches(login.year(),rows.getFirst().get("key_hash").toString()) && login.issued().equals(rows.getFirst().get("issued"));
         if(!valid) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Credenciales incorrectas.");
         return signIn(rows.getFirst().get("id").toString(),"ESTUDIANTE",req,res);
     }
@@ -99,7 +102,7 @@ public class DemoController {
     @PostMapping("/inquiries") @ResponseStatus(HttpStatus.CREATED)
     public Map<String,String> inquiry(@Valid @RequestBody Inquiry input,HttpServletRequest req) {
         rateLimit(req,"inquiry");
-        if(!PROGRAMS.contains(input.program())&&db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module='cursos' AND record_key=? AND deleted=FALSE",Integer.class,input.program())==0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
+        if(db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module='cursos' AND record_key=? AND deleted=FALSE AND active=TRUE",Integer.class,input.program())==0) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Programa inválido.");
         String id=UUID.randomUUID().toString();
         String first=input.firstName()==null?"":input.firstName().strip(),last=input.lastName()==null?"":input.lastName().strip(),city=input.city()==null?"":input.city().strip(),neighborhood=input.neighborhood()==null?"":input.neighborhood().strip();
         if((!first.isBlank()||!last.isBlank())&&(first.isBlank()||last.isBlank()||city.isBlank()||neighborhood.isBlank()))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Completa nombres, apellidos, ciudad y barrio.");
@@ -111,7 +114,7 @@ public class DemoController {
         return db.queryForList("SELECT i.*, coalesce(s.document,'') AS student_document FROM demo_inquiries i LEFT JOIN demo_students s ON s.id=i.student_id WHERE i.deleted=FALSE ORDER BY i.created_at DESC");
     }
     @GetMapping("/admin/students") public List<Map<String,Object>> students() {
-        return db.queryForList("SELECT id,name,email,phone,program,document,issued,academic_year,academic_status,admin_notes FROM demo_students ORDER BY created_at DESC");
+        return db.queryForList("SELECT id,name,email,phone,program,document,issued,academic_year,academic_status,admin_notes,account_active FROM demo_students WHERE deleted=FALSE ORDER BY created_at DESC");
     }
     @PostMapping("/admin/inquiries/{id}/student") @Transactional @ResponseStatus(HttpStatus.CREATED)
     public Map<String,String> createStudent(@PathVariable String id,@Valid @RequestBody CreateStudent input) {
@@ -123,17 +126,17 @@ public class DemoController {
         if(lead.get("student_id")!=null) throw new ResponseStatusException(HttpStatus.CONFLICT,"Esta solicitud ya tiene usuario.");
         String studentId=UUID.randomUUID().toString();
         try {
-            db.update("INSERT INTO demo_students(id,name,email,phone,program,document,issued,academic_year,key_hash,academic_status) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            db.update("INSERT INTO demo_students(id,name,email,phone,program,document,issued,academic_year,key_hash,academic_status,account_active) VALUES (?,?,?,?,?,?,?,?,?,?,FALSE)",
                 studentId,lead.get("name"),lead.get("email"),lead.get("phone"),lead.get("program"),input.document(),input.issued(),input.year(),encoder.encode(Integer.toString(input.year())),"PENDIENTE_MATRICULA");
         } catch(DuplicateKeyException e) { throw new ResponseStatusException(HttpStatus.CONFLICT,"El documento ya tiene usuario."); }
         db.update("UPDATE demo_inquiries SET student_id=?,status='USUARIO_CREADO' WHERE id=?",studentId,id);
         db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),"adminN","CREAR_USUARIO_ESTUDIANTE",studentId);
-        return Map.of("id",studentId,"message","Usuario creado. Puede entrar con el documento, la fecha y el año configurados.");
+        return Map.of("id",studentId,"message","Estudiante y usuario creados. La cuenta queda inactiva hasta que administración la habilite.");
     }
     @GetMapping("/student/me") public Map<String,Object> me() {
         String id=SecurityContextHolder.getContext().getAuthentication().getName();
         var data=new HashMap<String,Object>(db.queryForMap("SELECT id,name,email,phone,program,document,issued,academic_year,academic_status FROM demo_students WHERE id=?",id));
-        data.put("notes",db.queryForList("SELECT subject,grade,academic_year AS \"year\" FROM demo_notes WHERE student_id=?",id));
+        data.put("notes",courseGrades.portalNotes(id));
         data.put("movements",db.queryForList("SELECT concept,type,amount,movement_date AS \"date\" FROM demo_movements WHERE student_id=? ORDER BY movement_date",id));
         data.put("balance",db.queryForObject("SELECT coalesce(sum(CASE WHEN type='COBRO' THEN amount ELSE -amount END),0) FROM demo_movements WHERE student_id=?",java.math.BigDecimal.class,id));
         return data;

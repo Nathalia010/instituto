@@ -1,3 +1,4 @@
+import LandingImagesAdmin from './LandingImagesAdmin';
 import PublicationsAdmin from './Publications';
 import { useState } from 'react';
 import SitesAdmin from './Sites';
@@ -11,6 +12,7 @@ export default function PageManagement({ revision, onChanged }: {
 }) {
     const [section, setSection] = useState('imagenes');
     const sections = [
+        { id: 'portada', title: 'Imágenes de la página principal' },
         { id: 'comunicados', title: 'Comunicados' },
         { id: 'imagenes', title: 'Imágenes de Sobre nosotros' },
         { id: 'fechas', title: 'Fechas y eventos' },
@@ -21,6 +23,7 @@ export default function PageManagement({ revision, onChanged }: {
         <nav className="nav nav-pills gap-2 mb-4" aria-label="Secciones de gestión de página">
             {sections.map(item => <button key={item.id} className={`nav-link btn ${section === item.id ? 'active' : ''}`} aria-current={section === item.id ? 'page' : undefined} onClick={() => setSection(item.id)}>{item.title}</button>)}
         </nav>
+        {section === 'portada' && <LandingImagesAdmin/>}
         {section === 'comunicados' && <PublicationsAdmin/>}
         {section === 'sedes' && <SitesAdmin revision={revision}/>}
         {section === 'imagenes' && <GalleryAdmin revision={revision}/>}

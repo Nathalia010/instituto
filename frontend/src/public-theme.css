@@ -1,0 +1,37 @@
+.student-site{background:linear-gradient(140deg,#eef7fd,white 35%,#f0faf7);isolation:isolate}
+.student-site .cs-main{position:relative}
+.student-site .cs-main:has(>.institution-page):before,.student-site .cs-main:has(>.registration-page):before{content:"";position:absolute;inset:30px -3vw auto 40%;height:500px;background:#e5f2fc;border-radius:45% 35% 60% 35%;z-index:-1;transform:rotate(-9deg);pointer-events:none}
+.student-site .institution-page,.student-site .registration-page{padding-bottom:45px}
+.student-site .institution-hero{gap:45px;padding:55px 0}
+.student-site h1,.student-site h2,.student-site h3{color:#123e5a;font-weight:750}
+.student-site h1 em{color:#168e9a}
+.student-site .cs-button,.student-site .btn-primary{background:linear-gradient(110deg,#0876b3,#279c9b);border-color:transparent;border-radius:13px;box-shadow:0 5px 13px #07527a18}
+.student-site .cs-button.light{background:#f6d064;color:#204b62!important}
+.student-site .cs-outline,.student-site .btn-outline-primary{border-radius:12px;border-color:#accfdd;color:#176a87;background:#ffffffd9}
+.student-site .card,.student-site .cs-form,.student-site .institution-purpose,.student-site .institution-values>section,.student-site .icfes-steps>li,.student-site .icfes-resources>a,.student-site .registration-help,.student-site .cs-account-content{border-radius:20px;border:1px solid #dce9ec;box-shadow:0 7px 22px #15445a08}
+.student-site .institution-values>section{background:#fff;padding:26px}
+.student-site .institution-values>section:nth-child(2){background:#eef8f5}
+.student-site .institution-values>section:nth-child(3){background:#f1f7fd}
+.student-site .institution-link-banner{background:linear-gradient(110deg,#e5f3fc,#e8f7f2);border-radius:24px;border:1px solid #d2e8ec}
+.student-site .site-card{overflow:hidden;padding:0}
+.student-site .site-photo-placeholder{background:linear-gradient(120deg,#dcedf9,#d7eeea);color:#397787}
+.student-site input:not([type=checkbox]):not([type=radio]),.student-site select,.student-site textarea{border-radius:10px;border-color:#c7dfe7}
+.student-site .cs-account-tabs button{border-radius:12px}
+.student-site .table{--bs-table-bg:transparent;color:#234e65}
+.student-site .table thead{background:#eaf4fa}
+.student-site .gallery-showcase{border-radius:26px;background:linear-gradient(135deg,#e8f4fd,#eef8f5);padding:30px}
+.student-site .cs-footer{background:#eef7fc;border-top:1px solid #dbeaf0}
+.home-page .announcements:before{inset:90px -12px 20px}
+.home-page .publication-slider{max-width:none;width:100%;gap:18px;padding:12px 0 24px}
+.home-page .publication-preview{width:30%;border:2px solid white;transition:transform .8s ease,opacity .8s ease}
+.home-page .publication-preview.selected{width:38%}
+.home-page .publication-preview img{height:250px;animation:comunicado-reveal .85s ease both}
+.home-page .publication-preview.selected img{height:305px}
+.home-page .publication-copy{animation:comunicado-reveal .85s ease both}
+.home-page .home-banner-icon{display:grid;place-items:center;width:62px;height:62px;border-radius:17px;background:#ffffff1c;color:#fff2be;flex-shrink:0}
+@keyframes comunicado-reveal{from{opacity:.35;transform:scale(1.025)}to{opacity:1;transform:scale(1)}}
+@media(max-width:650px){.student-site .institution-hero{padding:35px 0;gap:28px}.student-site .gallery-showcase{padding:20px 14px}.home-page .publication-preview.selected{width:100%;max-width:none}.home-page .publication-preview.selected img{height:285px}.home-page .home-banner-icon{width:48px;height:48px}.home-page .home-banner-icon svg{width:28px;height:28px}}
+@media(prefers-reduced-motion:reduce){.home-page .publication-preview,.home-page .publication-copy,.home-page .publication-preview img{animation:none;transition:none}}
+.student-site.cs-site a.contact-icon.contact-whatsapp{background:#0876b3;border-color:#0876b3;color:#fff!important}
+.student-site.cs-site a.contact-icon.contact-whatsapp:hover,.student-site.cs-site a.contact-icon.contact-whatsapp:focus-visible{background:#075e8f;border-color:#075e8f;color:#fff!important}
+.student-site.cs-site{overflow-x:clip}.student-site.cs-site .gallery-showcase h2{color:#123e5a;font-size:29px}.student-site.cs-site .gallery-showcase .cs-eyebrow{color:#417782!important}.student-site.cs-site .gallery-showcase .cs-outline,.student-site.cs-site .gallery-showcase .cs-outline:hover{color:#176a87;background:#ffffffd9;--bs-btn-color:#176a87;--bs-btn-hover-color:#176a87}.student-site.cs-site .gallery-showcase .gallery-dots button[aria-current=true]{background:#0876b3;border-color:#0876b3}.student-site.cs-site .institution-link-banner .cs-eyebrow{color:#417782!important}

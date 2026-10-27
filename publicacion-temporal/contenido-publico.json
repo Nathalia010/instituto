@@ -1,0 +1,328 @@
+{
+  "/programs": [
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "Refuerzo escolar",
+      "image": "",
+      "id": "refuerzo",
+      "hours": ""
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "PRE ICFES · Preparación",
+      "image": "",
+      "id": "icfes",
+      "hours": ""
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.\nvas a aprender a suturar",
+      "name": "Enfermería (Preuniversitario)",
+      "image": "",
+      "id": "enfermeria",
+      "hours": "320"
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "Primera Infancia (Curso preparación)",
+      "image": "",
+      "id": "infancia",
+      "hours": ""
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "Auxiliar Administrativo (Curso preparación)",
+      "image": "",
+      "id": "administrativo",
+      "hours": ""
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "Preparación validación Bachillerato 299 (ADULTOS)",
+      "image": "",
+      "id": "validacion",
+      "hours": ""
+    },
+    {
+      "description": "Solicita información sobre este programa, sus requisitos y disponibilidad.",
+      "name": "Vinculación menor (CJK)",
+      "image": "",
+      "id": "vinculacion",
+      "hours": ""
+    }
+  ],
+  "/home/appearance": {
+    "heroImage": "/instituto/publicacion-temporal/preview-media/3d87a49498867095a9fcf169.png"
+  },
+  "/announcements": [
+    {
+      "intro": "Revive los momentos de nuestra comunidad.",
+      "link": "https://photos.google.com/share/AF1QipOl5oe5IoK3YxmHaGtio7AyRWaK1Q8SLk3cFDxqZrnwKxycGLJsje20AQTlOux1KQ?pli=1&key=ejAxckYzVjNYYmxxVHJyOVhGVUd3YzBVbWtwZWV3",
+      "state": "PUBLICADO",
+      "title": "Álbum 2026",
+      "type": "ALBUM",
+      "event": "",
+      "id": "album",
+      "deleted": "false"
+    },
+    {
+      "event": "",
+      "type": "FERIA",
+      "state": "PUBLICADO",
+      "intro": "Participa y registra tu emprendimiento.",
+      "title": "Feria empresarial",
+      "link": "https://docs.google.com/forms/d/e/1FAIpQLSfheDfvtuSYi18PzKXMQrBwLWqzNpSuw2pA2gLeD4FckITEBQ/viewform",
+      "id": "feria",
+      "deleted": "false"
+    },
+    {
+      "event": "",
+      "type": "NIVELACIONES",
+      "state": "PUBLICADO",
+      "intro": "Consulta las guías y las fechas habilitadas. Agenda desde tu espacio estudiantil.",
+      "title": "Nivelaciones",
+      "link": "",
+      "id": "nivelaciones",
+      "deleted": "false"
+    },
+    {
+      "event": "SALIDA-REFERENCIA-2026",
+      "type": "SALIDA",
+      "state": "PUBLICADO",
+      "intro": "Conoce los puntos de encuentro y la programación de referencia de octubre de 2026.",
+      "title": "Salida pedagógica",
+      "link": "",
+      "id": "salida",
+      "deleted": "false"
+    }
+  ],
+  "/gallery": [
+    {
+      "id": "perro-centro-saber",
+      "caption": "Estudiar abre nuevos caminos",
+      "active": true,
+      "url": "/instituto/publicacion-temporal/marca/perro-graduado.png",
+      "deleted": false
+    },
+    {
+      "id": "2eac2282-c167-4b35-8022-50821ad239ff",
+      "caption": "Centro Saber · Identidad institucional",
+      "active": true,
+      "url": "/instituto/publicacion-temporal/preview-media/dc2765a01832d7955e4ddc8c.png",
+      "deleted": false
+    },
+    {
+      "id": "a9092ba1-f8d0-4eeb-8442-be8b18815653",
+      "caption": "Centro Saber · Educación que abre caminos",
+      "active": true,
+      "url": "/instituto/publicacion-temporal/preview-media/ee646df56cc96a065ffe072e.png",
+      "deleted": false
+    }
+  ],
+  "/sites": [
+    {
+      "id": 1,
+      "name": "Sede 1",
+      "address": "Calle 26 B # 12i – 22 Sur · Barrio San José",
+      "phone": "3143544501",
+      "hours": "Martes a domingo, de 10:00 a. m. a 6:00 p. m.",
+      "mapUrl": "https://maps.app.goo.gl/4wfy6bWvpJBwGf549",
+      "imageUrl": "/instituto/publicacion-temporal/preview-media/aad748ca7873888ebd13e7f5.png"
+    },
+    {
+      "id": 2,
+      "name": "Sede 2",
+      "address": "",
+      "phone": "",
+      "hours": "",
+      "mapUrl": "",
+      "imageUrl": ""
+    },
+    {
+      "id": 3,
+      "name": "Sede 3",
+      "address": "",
+      "phone": "",
+      "hours": "",
+      "mapUrl": "",
+      "imageUrl": ""
+    }
+  ],
+  "/registration/settings": {
+    "form1": "https://docs.google.com/forms/d/e/1FAIpQLSe4Eb7DtGo7VTpfMRlwrfEf4GrMhsctWW8uvLjDmWxECUL8yw/viewform",
+    "form2": "https://docs.google.com/forms/d/e/1FAIpQLSdaVqATplzwGEqTBARjY_bN0LE5zgrFNZ_eOUN2toy9FzRCZA/viewform",
+    "neliName": "Neli",
+    "neliPhone": "3045822782",
+    "estivenName": "Estiven",
+    "estivenPhone": "3143544501"
+  },
+  "/agenda": [
+    {
+      "codigo_evento": "ICFES-A-2026-CITACION",
+      "anio": "2026",
+      "tipo_evento": "ICFES",
+      "titulo": "Publicación de citaciones",
+      "programa": "icfes",
+      "calendario": "A",
+      "etapa": "CITACION",
+      "fecha_inicio": "2026-07-10",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Referencia oficial consultada en octubre de 2026. Periodo finalizado.",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "ICFES-A-2026-APLICACION",
+      "anio": "2026",
+      "tipo_evento": "ICFES",
+      "titulo": "Aplicación del examen",
+      "programa": "icfes",
+      "calendario": "A",
+      "etapa": "APLICACION",
+      "fecha_inicio": "2026-07-26",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Referencia oficial consultada en octubre de 2026. Periodo finalizado.",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "ICFES-A-2026-RESULTADOS",
+      "anio": "2026",
+      "tipo_evento": "ICFES",
+      "titulo": "Resultados individuales",
+      "programa": "icfes",
+      "calendario": "A",
+      "etapa": "RESULTADOS",
+      "fecha_inicio": "2026-09-25",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Referencia oficial consultada en octubre de 2026. Periodo finalizado.",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "SALIDA-REFERENCIA-2026",
+      "anio": "2026",
+      "tipo_evento": "OTRO",
+      "titulo": "Salida pedagógica · Referencia 2026",
+      "programa": "todos",
+      "calendario": "",
+      "etapa": "",
+      "fecha_inicio": "2026-10-12",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Programación histórica del 12 de octubre de 2026.",
+      "estado": "PUBLICADO",
+      "programacion_url": "/eventos/SALIDA-REFERENCIA-2026"
+    },
+    {
+      "codigo_evento": "EVT-1791905113589",
+      "anio": "2026",
+      "tipo_evento": "OTRO",
+      "titulo": "salida pedagogica",
+      "programa": "todos",
+      "fecha_inicio": "2026-10-13",
+      "fecha_fin": "2026-10-17",
+      "hora": "00:00",
+      "lugar": "viaje melgar",
+      "enlace": "",
+      "detalle": "precio 20.000 por persona",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "ICFES-B-2027-CITACION",
+      "anio": "2027",
+      "tipo_evento": "ICFES",
+      "titulo": "Publicación de citaciones",
+      "programa": "icfes",
+      "calendario": "B",
+      "etapa": "CITACION",
+      "fecha_inicio": "2027-02-27",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Anuncio institucional de Centro Saber. Fecha por confirmar con el cronograma oficial de 2027.",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "ICFES-B-2027-APLICACION",
+      "anio": "2027",
+      "tipo_evento": "ICFES",
+      "titulo": "Aplicación del examen",
+      "programa": "icfes",
+      "calendario": "B",
+      "etapa": "APLICACION",
+      "fecha_inicio": "2027-03-15",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Anuncio institucional de Centro Saber. Fecha por confirmar con el cronograma oficial de 2027.",
+      "estado": "PUBLICADO"
+    },
+    {
+      "codigo_evento": "ICFES-B-2027-RESULTADOS",
+      "anio": "2027",
+      "tipo_evento": "ICFES",
+      "titulo": "Resultados",
+      "programa": "icfes",
+      "calendario": "B",
+      "etapa": "RESULTADOS",
+      "fecha_inicio": "2027-05-15",
+      "fecha_fin": "",
+      "hora": "",
+      "lugar": "",
+      "enlace": "",
+      "detalle": "Anuncio institucional de Centro Saber. Fecha por confirmar con el cronograma oficial de 2027.",
+      "estado": "PUBLICADO"
+    }
+  ],
+  "/leveling-dates": [
+    {
+      "slot_date": "2026-10-30",
+      "subject": "todas",
+      "location": "virtual perecencial en la sede 1",
+      "slot_time": "08:00"
+    },
+    {
+      "slot_date": "2026-11-07",
+      "subject": "tecnologia",
+      "location": "virtual",
+      "slot_time": "10:00"
+    },
+    {
+      "slot_date": "2026-11-21",
+      "subject": "etica",
+      "location": "virtual",
+      "slot_time": "13:00"
+    }
+  ],
+  "/event-pages/SALIDA-REFERENCIA-2026": {
+    "date": "2026-10-12",
+    "cost": "Incluye transporte, entrada, desayuno, almuerzo y piscina.",
+    "address": "",
+    "album": "https://photos.google.com/share/AF1QipOl5oe5IoK3YxmHaGtio7AyRWaK1Q8SLk3cFDxqZrnwKxycGLJsje20AQTlOux1KQ?pli=1&key=ejAxckYzVjNYYmxxVHJyOVhGVUd3YzBVbWtwZWV3",
+    "title": "Salida pedagógica · 12 de octubre de 2026",
+    "recommendations": "Respeta a los participantes, participa en las actividades y asiste puntualmente. Lleva ropa deportiva y ropa de cambio; cuida tus pertenencias. No consumir alcohol ni sustancias psicoactivas. La participación formaba parte de Educación Física y Proyecto. La página de referencia solicita copia de EPS o SISBÉN y carné de vacunación COVID; confirmar los requisitos actuales con la institución. Si asisten menores, deben estar acompañados en todo momento por una persona responsable.",
+    "points": "[{\"name\":\"La Ye\",\"address\":\"Semáforo DollarCity\",\"mapUrl\":\"https://maps.app.goo.gl/Rbu5mmQTbJGs5pobA\",\"time\":\"04:15\"},{\"name\":\"Santa Lucía\",\"address\":\"Estación de TransMilenio, costado sur · Av. Caracas #45d Sur 80\",\"mapUrl\":\"https://maps.app.goo.gl/HYDgiZpb74wRqEAy5\",\"time\":\"04:45\"},{\"name\":\"Perdomo\",\"address\":\"Estación Primax · Calle 63 Sur #70c-25, sobre la Villavicencio\",\"mapUrl\":\"https://maps.app.goo.gl/C3ibtFXLEpQjceAy8\",\"time\":\"05:00\"},{\"name\":\"Puente Alfonso López Comuneros\",\"address\":\"Avenida al Llano, hacia Comuneros por la droguería · Carrera 5 Este N°91 Sur\",\"mapUrl\":\"https://maps.app.goo.gl/bWpyo5TJ7GBZvvMW6\",\"time\":\"04:00\"},{\"name\":\"Portal 80\",\"address\":\"Puente del centro comercial · Cl. 80 Cr. 99\",\"mapUrl\":\"https://maps.app.goo.gl/ukekspNwUZMqLWRd9\",\"time\":\"05:40\"}]",
+    "schedule": "04:00 · Salida de Bogotá desde los puntos acordados\n07:30 · Desayuno\n08:30 · Paseo por el río, obstáculos en agua, lago y actividades en tierra\n10:30 · Actividades recreativas\n13:00 · Almuerzo\n14:00 · Piscina\n15:00 · Presentaciones artísticas y baile\n17:30 · Regreso",
+    "observations": "Referencia de 2026: pago hasta el 1 de octubre, extemporáneo hasta el 4 de octubre. No se recibía dinero el día de la salida ni se devolvía durante los tres días anteriores o después. Estas condiciones históricas deben actualizarse antes de una nueva convocatoria.",
+    "intro": "Programación histórica de referencia del lunes festivo 12 de octubre de 2026. Información sobre actividades, costos y compromisos para estudiantes de nuestros programas educativos y sociales.",
+    "mapUrl": "",
+    "place": "Ecoparque Los Chicos · San Francisco, Cundinamarca (camino a La Vega).",
+    "state": "PUBLICADO",
+    "prices": "[{\"label\":\"Pago ordinario\",\"amount\":\"110000\",\"deadline\":\"2026-10-01\"},{\"label\":\"Pago extemporáneo\",\"amount\":\"120000\",\"deadline\":\"2026-10-04\"}]",
+    "deadline": "",
+    "meeting": "Los puntos asignados dependen de la convocatoria del evento.\n\nLa Ye · Semáforo DollarCity · 4:15 a. m.\nhttps://maps.app.goo.gl/Rbu5mmQTbJGs5pobA\n\nSanta Lucía · Estación de TransMilenio, costado sur · Av. Caracas #45d Sur 80 · 4:45 a. m.\nhttps://maps.app.goo.gl/HYDgiZpb74wRqEAy5\n\nPerdomo · Estación Primax · Calle 63 Sur #70c-25, sobre la Villavicencio · 5:00 a. m.\nhttps://maps.app.goo.gl/C3ibtFXLEpQjceAy8\n\nPuente Alfonso López Comuneros · Avenida al Llano, hacia Comuneros por la droguería · Carrera 5 Este N°91 Sur · 4:00 a. m.\nhttps://maps.app.goo.gl/bWpyo5TJ7GBZvvMW6\n\nPortal 80 · Puente del centro comercial · Cl. 80 Cr. 99 · 5:40 a. m.\nhttps://maps.app.goo.gl/ukekspNwUZMqLWRd9",
+    "id": "SALIDA-REFERENCIA-2026",
+    "deleted": "false",
+    "photos": "[]"
+  }
+}

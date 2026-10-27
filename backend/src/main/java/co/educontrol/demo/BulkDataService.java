@@ -14,25 +14,31 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service @Profile("demo")
 public class BulkDataService {
- private final JdbcTemplate db;private final ObjectMapper json;
- public BulkDataService(JdbcTemplate db,ObjectMapper json){this.db=db;this.json=json;}
+ private final JdbcTemplate db;private final ObjectMapper json;private final StudentProvisioningService provisioning;
+ public BulkDataService(JdbcTemplate db,ObjectMapper json,StudentProvisioningService provisioning){this.db=db;this.json=json;this.provisioning=provisioning;}
  record Stored(String key,Integer year,Map<String,String> data) {}
  public record Checked(int row,boolean valid,List<String> errors,Map<String,String> data,Integer year) {}
  public record PreviewRequest(String module,String filename,List<List<String>> rows,Map<String,Integer> mapping,double minimum,double maximum) {}
  String encode(Object value){try{return json.writeValueAsString(value);}catch(Exception e){throw new IllegalArgumentException(e);}}
  Map<String,String> decode(String value){try{return json.readValue(value,new TypeReference<LinkedHashMap<String,String>>(){});}catch(Exception e){throw new IllegalStateException(e);}}
- private List<Stored> catalog(String module){return db.query("SELECT record_key,academic_year,payload FROM demo_data_records WHERE module=? AND deleted=FALSE ORDER BY created_at DESC",(rs,n)->new Stored(rs.getString(1),(Integer)rs.getObject(2),decode(rs.getString(3))),module);}
- private List<Stored> accounts(){
-  return db.query("SELECT * FROM demo_students ORDER BY created_at DESC",(rs,n)->{
-   Map<String,String> r=new LinkedHashMap<>();for(String f:DataCatalog.get("estudiantes").fields())r.put(f,"");
-   r.put("tipo_documento","CC");r.put("documento",rs.getString("document"));r.put("nombre_completo",rs.getString("name"));r.put("correo",rs.getString("email"));r.put("telefono",rs.getString("phone"));r.put("fecha_expedicion",rs.getString("issued"));r.put("programa",rs.getString("program"));r.put("anio",rs.getString("academic_year"));r.put("estado_academico",rs.getString("academic_status"));r.put("notas_administrativas",rs.getString("admin_notes"));return new Stored("CC:"+rs.getString("document"),rs.getInt("academic_year"),r);
-  });
+ private List<Stored> catalog(String module){return catalog(module,false);}
+ private List<Stored> catalog(String module,boolean deleted){return db.query("SELECT record_key,academic_year,payload,active FROM demo_data_records WHERE module=? AND deleted=? ORDER BY created_at DESC",(rs,n)->{var row=decode(rs.getString(3));if(Set.of("estudiantes","docentes","cursos").contains(module))row.put("estado_registro",deleted?"Eliminado":rs.getBoolean(4)?"Activo":"Inactivo");return new Stored(rs.getString(1),(Integer)rs.getObject(2),row);},module,deleted);}
+ private List<Stored> accounts(boolean deleted){
+  return db.query("SELECT * FROM demo_students WHERE deleted=? ORDER BY created_at DESC",(rs,n)->{
+   Map<String,String> r=new LinkedHashMap<>();
+   r.put("tipo_documento",rs.getString("document_type"));r.put("documento",rs.getString("document"));r.put("nombre_completo",rs.getString("name"));r.put("correo",rs.getString("email"));r.put("telefono",rs.getString("phone"));r.put("fecha_expedicion",rs.getString("issued"));r.put("programa",rs.getString("program"));r.put("anio",rs.getString("academic_year"));r.put("estado_academico",rs.getString("academic_status"));r.put("notas_administrativas",rs.getString("admin_notes"));
+  r.put("estado_registro",deleted?"Eliminado":rs.getBoolean("account_active")?"Activo":"Inactivo");return new Stored(rs.getString("document_type")+":"+rs.getString("document"),rs.getInt("academic_year"),r);
+  },deleted);
  }
- private List<Stored> records(String module){var list=new ArrayList<>(catalog(module));if(module.equals("estudiantes")){var keys=new HashSet<String>();list.forEach(r->keys.add(r.key));accounts().stream().filter(r->!keys.contains(r.key)).forEach(list::add);}return list;}
+ private List<Stored> records(String module){return records(module,false);}
+ private List<Stored> records(String module,boolean deleted){var rows=new LinkedHashMap<String,Stored>();catalog(module,deleted).forEach(r->rows.put(r.key,r));if(module.equals("estudiantes")){accounts(deleted).forEach(r->{var old=rows.get(r.key);var merged=new LinkedHashMap<String,String>();if(old!=null)merged.putAll(old.data);merged.putAll(r.data);rows.put(r.key,new Stored(r.key,r.year,merged));});var opposite=new HashSet<>(db.queryForList("SELECT document_type || ':' || document FROM demo_students WHERE deleted=?",String.class,!deleted));opposite.forEach(rows::remove);}return new ArrayList<>(rows.values());}
  public List<Map<String,String>> list(String module,Integer year){
+  return list(module,year,false);
+ }
+ public List<Map<String,String>> list(String module,Integer year,boolean deleted){
   var definition=DataCatalog.get(module);var result=new ArrayList<Map<String,String>>();
   Set<String> enrolled=new HashSet<>();if(module.equals("estudiantes")&&year!=null)for(var r:catalog("matriculas"))if(year.equals(r.year))enrolled.add(r.data.get("tipo_documento")+":"+r.data.get("documento"));
-  for(var r:records(module))if(year==null||!definition.annual()||year.equals(r.year)||enrolled.contains(r.key)){var row=new LinkedHashMap<>(r.data);if(r.year!=null&&!row.containsKey("anio"))row.put("anio",r.year.toString());result.add(row);}return result;
+  for(var r:records(module,deleted))if(year==null||!definition.annual()||year.equals(r.year)||enrolled.contains(r.key)){var row=new LinkedHashMap<>(r.data);if(r.year!=null&&!row.containsKey("anio"))row.put("anio",r.year.toString());result.add(row);}return result;
  }
  public List<Integer> years(){TreeSet<Integer> years=new TreeSet<>(Comparator.reverseOrder());db.queryForList("SELECT DISTINCT academic_year FROM demo_data_records WHERE academic_year IS NOT NULL",Integer.class).forEach(years::add);db.queryForList("SELECT DISTINCT academic_year FROM demo_students",Integer.class).forEach(years::add);return new ArrayList<>(years);}
  // Existing portal history has no enrollment/charge codes. Keep it visible in the
@@ -44,8 +50,8 @@ public class BulkDataService {
  private Map<String,Stored> indexed(String module){Map<String,Stored> map=new HashMap<>();records(module).forEach(r->map.put(r.key,r));return map;}
  private Integer referenceYear(String module,String key,List<String> errors){var found=indexed(module).get(key);if(found==null){errors.add("No existe la referencia en "+DataCatalog.get(module).label()+": "+key);return null;}return found.year;}
  List<Checked> check(String module,List<Map<String,String>> input,double minimum,double maximum){
-  var definition=DataCatalog.get(module);Set<String> seen=new HashSet<>();Set<String> existing=indexed(module).keySet();List<Checked> result=new ArrayList<>();
-  if(module.equals("agenda")){existing=new HashSet<>(existing);existing.addAll(db.queryForList("SELECT record_key FROM demo_data_records WHERE module='agenda' AND deleted=TRUE",String.class));}
+  var definition=DataCatalog.get(module);Set<String> seen=new HashSet<>();Set<String> seenDocuments=new HashSet<>();Set<String> accountDocuments=module.equals("estudiantes")?new HashSet<>(db.queryForList("SELECT document FROM demo_students",String.class)):Set.of();Set<String> existing=indexed(module).keySet();List<Checked> result=new ArrayList<>();
+  existing=new HashSet<>(existing);existing.addAll(db.queryForList("SELECT record_key FROM demo_data_records WHERE module=? AND deleted=TRUE",String.class,module));
   for(int i=0;i<input.size();i++){
    if(input.get(i).containsKey("__skip"))continue;
    var r=new LinkedHashMap<String,String>();for(var f:definition.fields())r.put(f,input.get(i).getOrDefault(f,"").strip());
@@ -57,14 +63,28 @@ public class BulkDataService {
    for(String f:List.of("documento","documento_docente"))if(r.containsKey(f)&&!r.get(f).matches("[A-Z0-9]{1,40}"))errors.add("Documento inválido: "+f);
    if(r.containsKey("correo")&&!r.get("correo").isBlank()&&!r.get("correo").matches("[^\\s@]+@[^\\s@]+\\.[^\\s@]+"))errors.add("Correo inválido");
    if(module.equals("estudiantes")&&r.get("nombre_completo").isBlank()&&(r.get("nombres").isBlank()||r.get("apellidos").isBlank()))errors.add("Completa nombres y apellidos o nombre_completo");
+   if(module.equals("estudiantes")){
+    if(accountDocuments.contains(r.get("documento"))||!seenDocuments.add(r.get("documento")))errors.add("El documento ya tiene una cuenta o está repetido en el archivo");
+    if(r.get("documento").length()>30)errors.add("Documento: máximo 30 caracteres");
+    String full=r.get("nombre_completo").isBlank()?(r.get("nombres")+" "+r.get("apellidos")).strip():r.get("nombre_completo");if(full.length()>180)errors.add("Nombre: máximo 180 caracteres");
+    if(r.get("correo").length()>254)errors.add("Correo: máximo 254 caracteres");if(r.get("telefono").length()>20)errors.add("Teléfono: máximo 20 caracteres");if(r.get("programa").length()>50)errors.add("Programa: máximo 50 caracteres");
+    if(!r.get("estado_academico").isBlank()&&!Set.of("EN_CURSO","FINALIZADO","NO_FINALIZADO","RETIRADO","PENDIENTE_EVALUACION","PENDIENTE_MATRICULA").contains(r.get("estado_academico")))errors.add("Estado académico inválido");
+    if(!r.get("fecha_expedicion").isBlank())try{if(LocalDate.parse(r.get("fecha_expedicion")).isAfter(LocalDate.now(ZoneId.of("America/Bogota"))))errors.add("La expedición no puede ser futura");}catch(Exception ignored){}
+   }
    if(module.equals("estudiantes")&&r.get("notas_administrativas").length()>500)errors.add("Notas administrativas: máximo 500 caracteres");
    for(String field:List.of("fecha_expedicion","fecha_inicio","fecha_fin","fecha_matricula","fecha_vencimiento","fecha_pago"))if(r.containsKey(field)&&!r.get(field).isBlank())try{LocalDate.parse(r.get(field));}catch(Exception e){errors.add("Fecha inválida (AAAA-MM-DD): "+field);}
    if(r.containsKey("anio")&&!r.get("anio").isBlank())try{year=Integer.parseInt(r.get("anio"));if(year<2000||year>2200)throw new Exception();}catch(Exception e){errors.add("Año inválido");}
    if(module.equals("cursos")){if(!r.get("codigo_curso").matches("[A-Za-z0-9_-]{1,50}"))errors.add("Código de curso: máximo 50 letras, números, guiones o guion bajo");if(r.get("nombre").length()>180)errors.add("Nombre: máximo 180 caracteres");if(!Set.of("VALIDACION_BACHILLERATO","CURSO","TECNICO").contains(r.get("tipo_programa")))errors.add("Tipo de programa inválido");if(!r.get("duracion_horas").isBlank())try{if(Integer.parseInt(r.get("duracion_horas"))<=0)throw new Exception();}catch(Exception e){errors.add("Duración debe ser un entero positivo");}if(r.get("publicado").isBlank())r.put("publicado","SI");if(!Set.of("SI","NO").contains(r.get("publicado")))errors.add("Publicado debe ser SI o NO");}
+   if(module.equals("cursos")&&!r.get("fecha_inicio").isBlank()&&!r.get("fecha_fin").isBlank())try{if(LocalDate.parse(r.get("fecha_fin")).isBefore(LocalDate.parse(r.get("fecha_inicio"))))errors.add("La fecha final es anterior al inicio");}catch(Exception ignored){}
+   if(module.equals("cursos")){
+    try{CourseGradeController.subjects(r);}catch(ResponseStatusException ex){errors.add(ex.getReason());}
+    if(!r.get("nota_aprobacion").isBlank())try{var value=new BigDecimal(r.get("nota_aprobacion"));if(value.signum()<0||value.compareTo(new BigDecimal("5"))>0||value.scale()>2)throw new IllegalArgumentException();}catch(Exception ex){errors.add("La nota de aprobación debe estar entre 0 y 5, con máximo dos decimales");}
+   }
    if(module.equals("periodos"))try{var start=LocalDate.parse(r.get("fecha_inicio"));if(LocalDate.parse(r.get("fecha_fin")).isBefore(start))errors.add("La fecha final es anterior al inicio");if(year!=null&&start.getYear()!=year)errors.add("El año no coincide con la fecha inicial");}catch(Exception ignored){}
    if(module.equals("matriculas")){
     if(!indexed("estudiantes").containsKey(r.get("tipo_documento")+":"+r.get("documento")))errors.add("Estudiante no registrado");
     if(!indexed("cursos").containsKey(r.get("codigo_curso")))errors.add("Curso no registrado");
+    else if("Inactivo".equals(indexed("cursos").get(r.get("codigo_curso")).data.get("estado_registro")))errors.add("El curso está inactivo");
     year=referenceYear("periodos",r.get("codigo_periodo"),errors);
     if(!Set.of("EN_CURSO","FINALIZADO","NO_FINALIZADO","RETIRADO","PENDIENTE_EVALUACION").contains(r.get("estado_academico")))errors.add("Estado académico inválido");
    }
@@ -95,6 +115,7 @@ public class BulkDataService {
   if(editing&&(!module.equals("cursos")||db.queryForObject("SELECT COUNT(*) FROM demo_data_records WHERE module=? AND record_key=? AND deleted=FALSE",Integer.class,module,originalKey)==0))throw new ResponseStatusException(HttpStatus.NOT_FOUND);
   var checked=check(module,List.of(input),0,5).getFirst();var errors=new ArrayList<>(checked.errors());if(editing){if(!originalKey.equals(DataCatalog.key(module,checked.data())))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"El código no se puede cambiar.");errors.remove("Registro existente: no se sobrescribirá");}if(!errors.isEmpty())throw new ResponseStatusException(HttpStatus.BAD_REQUEST,String.join(" · ",errors));
   String key=DataCatalog.key(module,checked.data());if(editing)db.update("UPDATE demo_data_records SET academic_year=?,payload=? WHERE module=? AND record_key=?",checked.year(),encode(checked.data()),module,key);else db.update("INSERT INTO demo_data_records(module,record_key,academic_year,payload) VALUES (?,?,?,?)",module,key,checked.year(),encode(checked.data()));
+  if(module.equals("estudiantes")&&!editing)provisioning.createInactive(checked.data(),actor);
   db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),actor,editing?"EDITAR_CURSO":"CREAR_"+module.toUpperCase(),key);return checked.data();
  }
  @Transactional public Map<String,String> saveEvent(String originalKey,Map<String,String> data,String actor){
@@ -124,7 +145,7 @@ public class BulkDataService {
   if(((java.sql.Timestamp)p.get("created_at")).toInstant().isBefore(Instant.now().minusSeconds(900)))throw new ResponseStatusException(HttpStatus.GONE,"Vista previa vencida. Vuelve a validar el archivo.");
   List<Map<String,String>> input;try{input=json.readValue(p.get("payload").toString(),new TypeReference<>(){});}catch(Exception e){throw new IllegalStateException(e);}
   String module=p.get("module").toString();var checked=check(module,input,((Number)p.get("scale_min")).doubleValue(),((Number)p.get("scale_max")).doubleValue());int saved=0;
-  for(var row:checked)if(row.valid()){db.update("INSERT INTO demo_data_records(module,record_key,academic_year,payload) VALUES (?,?,?,?)",module,DataCatalog.key(module,row.data()),row.year(),encode(row.data()));saved++;}
+  for(var row:checked)if(row.valid()){db.update("INSERT INTO demo_data_records(module,record_key,academic_year,payload) VALUES (?,?,?,?)",module,DataCatalog.key(module,row.data()),row.year(),encode(row.data()));if(module.equals("estudiantes"))provisioning.createInactive(row.data(),"adminN");saved++;}
   if(saved==0)throw new ResponseStatusException(HttpStatus.CONFLICT,"No quedan filas válidas. Vuelve a validar.");
   db.update("UPDATE demo_data_previews SET confirmed=TRUE WHERE id=?",id);db.update("INSERT INTO demo_audit(id,actor,action,resource_id) VALUES (?,?,?,?)",UUID.randomUUID().toString(),"adminN","IMPORTAR_"+module.toUpperCase(),id);
   return Map.of("saved",saved,"skipped",checked.size()-saved);

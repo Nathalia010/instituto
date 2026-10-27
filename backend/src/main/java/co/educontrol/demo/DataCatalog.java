@@ -10,7 +10,7 @@ final class DataCatalog {
  static final List<Definition> ALL=List.of(
   def("estudiantes","Estudiantes",true,"tipo_documento,documento,nombres,apellidos,nombre_completo,correo,telefono,fecha_expedicion,programa,anio,estado_academico,notas_administrativas","tipo_documento,documento"),
   def("docentes","Docentes",false,"tipo_documento,documento,nombre_completo,correo,telefono","tipo_documento,documento,nombre_completo,correo"),
-  def("cursos","Cursos",false,"codigo_curso,nombre,tipo_programa,duracion_horas,descripcion,publicado","codigo_curso,nombre,tipo_programa"),
+  def("cursos","Cursos",false,"codigo_curso,nombre,tipo_programa,duracion_horas,descripcion,publicado,materias,fecha_inicio,fecha_fin,nota_aprobacion","codigo_curso,nombre,tipo_programa"),
   def("periodos","Periodos",true,"codigo_periodo,anio,nombre,fecha_inicio,fecha_fin","codigo_periodo,anio,nombre,fecha_inicio,fecha_fin"),
   def("matriculas","Matrículas",true,"codigo_matricula,tipo_documento,documento,codigo_curso,codigo_periodo,grupo,fecha_matricula,estado_academico","codigo_matricula,tipo_documento,documento,codigo_curso,codigo_periodo,grupo,fecha_matricula,estado_academico"),
   def("notas","Notas",true,"codigo_matricula,codigo_evaluacion,nota,tipo_documento_docente,documento_docente","codigo_matricula,codigo_evaluacion,nota,tipo_documento_docente,documento_docente"),

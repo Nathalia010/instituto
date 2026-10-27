@@ -42,6 +42,9 @@ class DemoFlowTest {
   String body="{\"document\":\"1000000002\",\"issued\":\"2021-02-03\",\"year\":2026}";
   mvc.perform(post("/api/demo/admin/inquiries/"+leadId+"/student").session(adminSession).with(csrf()).contentType("application/json").content(body)).andExpect(status().isCreated());
   mvc.perform(post("/api/demo/admin/inquiries/"+leadId+"/student").session(adminSession).with(csrf()).contentType("application/json").content(body)).andExpect(status().isConflict());
+  var createdId=json.readTree(mvc.perform(get("/api/demo/admin/students").session(adminSession)).andReturn().getResponse().getContentAsString());String newId="";for(var account:createdId)if(account.get("document").asText().equals("1000000002"))newId=account.get("id").asText();
+  mvc.perform(post("/api/demo/login/student").with(csrf()).contentType("application/json").content("{\"document\":\"1000000002\",\"issued\":\"2021-02-03\",\"year\":\"2026\"}")).andExpect(status().isUnauthorized());
+  mvc.perform(post("/api/demo/admin/students/"+newId+"/access").session(adminSession).with(csrf()).contentType("application/json").content("{\"active\":true}")).andExpect(status().isOk());
   var studentResult=mvc.perform(post("/api/demo/login/student").with(csrf()).contentType("application/json").content("{\"document\":\"1000000002\",\"issued\":\"2021-02-03\",\"year\":\"2026\"}")).andExpect(status().isOk()).andReturn();
   var studentSession=(MockHttpSession)studentResult.getRequest().getSession(false);
   mvc.perform(get("/api/demo/student/me").session(studentSession)).andExpect(status().isOk()).andExpect(jsonPath("$.name").value("Interesado ficticio")).andExpect(jsonPath("$.notes").isEmpty()).andExpect(jsonPath("$.movements").isEmpty());

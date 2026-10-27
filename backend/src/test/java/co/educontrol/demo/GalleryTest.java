@@ -43,14 +43,12 @@ class GalleryTest {
   mvc.perform(multipart("/api/demo/admin/gallery").file(image()).param("caption","x".repeat(181)).session(session).with(csrf())).andExpect(status().isBadRequest());
   mvc.perform(multipart("/api/demo/admin/gallery").file(image()).param("caption","Prueba").session(session)).andExpect(status().isForbidden());
  }
- @Test void deleteAndRecoverPreserveImageAndPreviousPublicationState()throws Exception{
+ @Test void deletionPermanentlyRemovesStoredImage()throws Exception{
   var session=admin();var result=mvc.perform(multipart("/api/demo/admin/gallery").file(image()).param("caption","Imagen eliminable de prueba").session(session).with(csrf())).andExpect(status().isCreated()).andReturn();String id=json.readTree(result.getResponse().getContentAsString()).get("id").asText();
   mvc.perform(post("/api/demo/admin/gallery/"+id+"/delete").session(session)).andExpect(status().isForbidden());
   mvc.perform(post("/api/demo/admin/gallery/"+id+"/delete").session(session).with(csrf())).andExpect(status().isOk());
-  mvc.perform(get("/api/demo/gallery")).andExpect(jsonPath("$[?(@.id=='"+id+"')]").isEmpty());mvc.perform(get("/api/demo/gallery/images/"+id)).andExpect(status().isNotFound());mvc.perform(get("/api/demo/admin/gallery").session(session)).andExpect(jsonPath("$[?(@.id=='"+id+"')].deleted").value(true));mvc.perform(get("/api/demo/admin/gallery/images/"+id).session(session)).andExpect(status().isOk());
+  mvc.perform(get("/api/demo/gallery/images/"+id)).andExpect(status().isNotFound());mvc.perform(get("/api/demo/admin/gallery/images/"+id).session(session)).andExpect(status().isNotFound());mvc.perform(get("/api/demo/admin/gallery").session(session)).andExpect(jsonPath("$[?(@.id=='"+id+"')]").isEmpty());
   mvc.perform(post("/api/demo/admin/gallery/"+id+"/restore").session(session).with(csrf())).andExpect(status().isNotFound());
-  mvc.perform(post("/api/demo/admin/gallery/"+id+"/undelete").session(session).with(csrf())).andExpect(status().isOk());mvc.perform(get("/api/demo/gallery/images/"+id)).andExpect(status().isOk());
-  mvc.perform(post("/api/demo/admin/gallery/"+id+"/hide").session(session).with(csrf())).andExpect(status().isOk());mvc.perform(post("/api/demo/admin/gallery/"+id+"/delete").session(session).with(csrf())).andExpect(status().isOk());mvc.perform(post("/api/demo/admin/gallery/"+id+"/undelete").session(session).with(csrf())).andExpect(status().isOk());mvc.perform(get("/api/demo/gallery")).andExpect(jsonPath("$[?(@.id=='"+id+"')]").isEmpty());
  }
  @Test void onlyAdminsCanManageImages() throws Exception{
   mvc.perform(get("/api/demo/admin/gallery")).andExpect(status().isUnauthorized());
